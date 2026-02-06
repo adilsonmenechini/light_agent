@@ -35,10 +35,9 @@ Uses curl to download page content...
 ```
 
 ### `workspace/memory/`
-- `memory/YYYY-MM-DD.json`: Daily logs of interactions in a structured format.
-  - **Format**: JSON array `[...]` with one line per entry.
-  - **Fields**: `timestamp`, `conversation_id`, `question`, `answer`, `summary`.
-- `memory/MEMORY.md`: Long-term global context/facts distilled by the agent.
+### `workspace/memory/`
+- `memory/MEMORY.md`: **Fixed Facts**. Long-term global context/facts distilled by the agent. This is always injected into the context.
+- `.../data/memory/long_memory.db`: **Interaction History**. SQLite database storing all past Q&A, capable of semantic search. Managed automatically.
 
 > [!NOTE]
 > Detailed live conversation history is managed separately by the `SessionManager` in `~/.light_agent/sessions/` for LLM context purposes.
