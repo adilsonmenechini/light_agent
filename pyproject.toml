@@ -1,0 +1,50 @@
+[project]
+name = "lightagent"
+version = "0.1.0"
+description = "Lightweight SRE AI Agent"
+requires-python = ">=3.12"
+dependencies = [
+    "ddgs>=9.10.0",
+    "duckduckgo-search>=8.1.1",
+    "httpx>=0.28.1",
+    "litellm>=1.81.8",
+    "loguru>=0.7.3",
+    "mcp>=1.26.0",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "pyyaml>=6.0.3",
+    "readability-lxml>=0.8.4.1",
+    "rich>=14.3.2",
+    "typer>=0.21.1",
+]
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+lightagent = "light_agent.cli.commands:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["light_agent"]
+
+[tool.hatch.build]
+include = [
+    "light_agent/**/*.py",
+    "workspace/skills/**/*.md",
+    "workspace/skills/**/*.sh",
+]
+
+[tool.hatch.build.targets.wheel.sources]
+"light_agent" = "light_agent"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
