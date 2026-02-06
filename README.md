@@ -14,6 +14,11 @@ Lightweight SRE AI Agent designed for local execution and portability.
 
 Start a chat with the agent:
 ```bash
+uv run lightagent chat
+```
+
+Or run a single prompt:
+```bash
 uv run lightagent chat "Sua pergunta aqui"
 ```
 
@@ -21,6 +26,13 @@ Use verbose mode for detailed logs:
 ```bash
 uv run lightagent chat "Sua pergunta aqui" --verbose
 ```
+
+### Slash Commands
+Inside the interactive chat mode, you can use the following commands:
+- `/new`: Clear current conversation history and start fresh.
+- `/status`: Show connected MCP servers and loaded markdown skills.
+- `/reset`: Restart tools and reconnect to MCP servers.
+- `/quit` or `/exit`: Close the session.
 
 ## Core Features
 
