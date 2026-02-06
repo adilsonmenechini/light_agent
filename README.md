@@ -14,6 +14,11 @@ Lightweight SRE AI Agent designed for local execution and portability.
 
 Start a chat with the agent:
 ```bash
+uv run lightagent chat
+```
+
+Or run a single prompt:
+```bash
 uv run lightagent chat "Sua pergunta aqui"
 ```
 
@@ -21,6 +26,13 @@ Use verbose mode for detailed logs:
 ```bash
 uv run lightagent chat "Sua pergunta aqui" --verbose
 ```
+
+### Slash Commands
+Inside the interactive chat mode, you can use the following commands:
+- `/new`: Clear current conversation history and start fresh.
+- `/status`: Show connected MCP servers and loaded markdown skills.
+- `/reset`: Restart tools and reconnect to MCP servers.
+- `/quit` or `/exit`: Close the session.
 
 ## Core Features
 
@@ -33,7 +45,7 @@ Supported via `litellm`:
 ### 2. Tools & Skills
 - **Native Tools**: `exec`, `list_dir`, `read_file`, `write_file`, `web_search`, `web_fetch`.
 - **Markdown Skills**: Discovered in `workspace/skills/`.
-- **Sub-agents**: Task delegation via `spawn`.
+- **Sub-agents**: Task delegation via `spawn`, `parallel_spawn`, and result coordination via `wait_subagents`.
 
 ### 3. MCP Integrations
 Connect to external Model Context Protocol servers (e.g., Google Drive, Slack) by configuring `workspace/servers_config.json`.
@@ -48,7 +60,7 @@ Connect to external Model Context Protocol servers (e.g., Google Drive, Slack) b
 | Feature | Category | Status | Description |
 | :--- | :--- | :--- | :--- |
 | **Long-term Memory** | Memory | ✅ Done | Persistent storage using SQLite + BM25 with time-based filtering (e.g., last 30d). |
-| **Parallel Subagents** | Agents | ⏳ Planned | Enable multiple subagents to work concurrently on complex tasks. |
+| **Parallel Subagents** | Agents | ✅ Done | Enable multiple subagents to work concurrently on complex tasks. |
 | **Multi-Model Orchestration** | LLM | ⏳ Planned | Simultaneous use of different models for specialized tasks (reasoning vs. speed). |
 | **Interactive Chat Mode** | CLI | ✅ Done | Persistent chat session launched via `uv run lightagent chat`. |
 | **Slash Commands** | CLI | ✅ Done | Support for commands like `/new`, `/reset`, and `/status` within the chat. |

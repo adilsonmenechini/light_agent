@@ -14,13 +14,16 @@ from light_agent.session.manager import SessionManager
 from light_agent.agent.tools import (
     ExecTool,
     ListDirTool,
+    ParallelSpawnTool,
     ReadFileTool,
     SpawnTool,
     ToolRegistry,
+    WaitSubagentsTool,
     WebFetchTool,
     WebSearchTool,
     WriteFileTool,
 )
+from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.agent.tools.native import NativeTool
 from light_agent.config.settings import settings
 from light_agent.providers.litellm_provider import LiteLLMProvider
@@ -81,6 +84,7 @@ async def setup_agent(verbose: bool = False):
         tools.mcp_clients.append(mcp)
 
     session_manager = SessionManager(settings.WORKSPACE_DIR)
+    long_memory = LongMemoryTool(settings.WORKSPACE_DIR)
     subagent_manager = SubagentManager(provider, settings.WORKSPACE_DIR, session_manager)
 
     # Register Native Tools
@@ -91,6 +95,9 @@ async def setup_agent(verbose: bool = False):
     tools.register(WebSearchTool())
     tools.register(WebFetchTool())
     tools.register(SpawnTool(manager=subagent_manager))
+    tools.register(ParallelSpawnTool(manager=subagent_manager))
+    tools.register(WaitSubagentsTool(manager=subagent_manager))
+    tools.register(long_memory)  # Register LongMemoryTool
 
     # Add fake native tool for testing
     async def get_system_load():
@@ -104,7 +111,7 @@ async def setup_agent(verbose: bool = False):
     )
     tools.register(system_load_tool)
 
-    agent = AgentLoop(provider, memory, tools)
+    agent = AgentLoop(provider, memory, tools, long_memory=long_memory)
     return agent, tools
 
 

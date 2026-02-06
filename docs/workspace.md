@@ -21,6 +21,7 @@ Generic skills adapted from `lightagent` include:
 - `github/`: Interaction with `gh` CLI.
 - `skill-creator/`: Guidelines for building new skills.
 - `summarize/`: Text/URL summarization instructions.
+- `task-management/`: Standardized workflow for complex tasks (planning, tasks.md, walkthrough).
 
 Example: `workspace/skills/fetch_url/SKILL.md`
 ```markdown
