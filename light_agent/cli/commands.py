@@ -14,9 +14,11 @@ from light_agent.session.manager import SessionManager
 from light_agent.agent.tools import (
     ExecTool,
     ListDirTool,
+    ParallelSpawnTool,
     ReadFileTool,
     SpawnTool,
     ToolRegistry,
+    WaitSubagentsTool,
     WebFetchTool,
     WebSearchTool,
     WriteFileTool,
@@ -93,6 +95,8 @@ async def setup_agent(verbose: bool = False):
     tools.register(WebSearchTool())
     tools.register(WebFetchTool())
     tools.register(SpawnTool(manager=subagent_manager))
+    tools.register(ParallelSpawnTool(manager=subagent_manager))
+    tools.register(WaitSubagentsTool(manager=subagent_manager))
     tools.register(long_memory)  # Register LongMemoryTool
 
     # Add fake native tool for testing

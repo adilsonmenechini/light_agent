@@ -6,6 +6,8 @@ from light_agent.agent.tools.registry import ToolRegistry
 from light_agent.agent.tools.shell import ExecTool
 from light_agent.agent.tools.spawn import SpawnTool
 from light_agent.agent.tools.web import WebFetchTool, WebSearchTool
+from light_agent.agent.tools.parallel_spawn import ParallelSpawnTool
+from light_agent.agent.tools.wait import WaitSubagentsTool
 
 __all__ = [
     "Tool",
@@ -15,6 +17,8 @@ __all__ = [
     "WriteFileTool",
     "ExecTool",
     "SpawnTool",
+    "ParallelSpawnTool",
+    "WaitSubagentsTool",
     "WebFetchTool",
     "WebSearchTool",
 ]

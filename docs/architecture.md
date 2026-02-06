@@ -11,6 +11,7 @@ graph TD
     AL --> ToolReg[ToolRegistry]
     AL --> Memory[MemoryStore]
     AL --> LongMemory[LongMemoryTool (SQLite)]
+    AL --> Subagent[SubagentManager]
     
     ToolReg --> Skills[SkillsLoader]
     ToolReg --> MCP[MCP Clients]
@@ -25,7 +26,9 @@ graph TD
 ```
 
 ## Multi-Agent Logic
-The system supports multiple agents defined as Markdown personas. A supervisor or a coordinator can orchestrate tasks between these agents using a simple event-driven loop.
+The system supports spawning background subagents. These are isolated agent instances that share the same provider but have a focused system prompt and localized tools. 
+
+Concurrent execution is supported via `SubagentManager`, allowing the main agent to delegate multiple tasks in parallel and coordinate their results.
 
 ## Core Flow
 1. **Input**: User command via CLI.

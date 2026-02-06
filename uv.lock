@@ -894,6 +894,7 @@ dependencies = [
     { name = "readability-lxml" },
     { name = "rich" },
     { name = "typer" },
+    { name = "typing-extensions" },
 ]
 
 [package.metadata]
@@ -911,6 +912,7 @@ requires-dist = [
     { name = "readability-lxml", specifier = ">=0.8.4.1" },
     { name = "rich", specifier = ">=14.3.2" },
     { name = "typer", specifier = ">=0.21.1" },
+    { name = "typing-extensions", specifier = ">=4.15.0" },
 ]
 
 [[package]]
