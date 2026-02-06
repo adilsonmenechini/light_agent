@@ -15,7 +15,15 @@ class AgentLoop:
         self.memory = memory
         self.tools = tools
         self.messages: List[Dict[str, str]] = []
-        self.conversation_id = str(uuid.uuid4())[:8]
+        self.conversation_id = self._generate_id()
+
+    def _generate_id(self) -> str:
+        return str(uuid.uuid4())[:8]
+
+    def clear_messages(self):
+        """Clear conversation history and start a new conversation ID."""
+        self.messages = []
+        self.conversation_id = self._generate_id()
 
     async def run(self, user_input: str):
         # Initial context
