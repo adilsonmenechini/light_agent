@@ -29,7 +29,9 @@ app = typer.Typer(name="lightagent", help="Lightweight SRE AI Agent", no_args_is
 console = Console()
 
 
-async def main_loop(prompt: str, verbose: bool = False):
+
+async def setup_agent(verbose: bool = False):
+    """Common setup for AgentLoop and its dependencies."""
     # Configure logging based on verbose flag
     if not verbose:
         logger.remove()  # Remove default handler
@@ -69,6 +71,7 @@ async def main_loop(prompt: str, verbose: bool = False):
     for name, config in mcp_config.items():
         if isinstance(config, str):
             command = config
+            mcp = MCPClient(name, command, [], suppress_output=not verbose)
         else:
             # Handle full MCP server config format
             cmd = config.get("command")
@@ -101,9 +104,83 @@ async def main_loop(prompt: str, verbose: bool = False):
     )
     tools.register(system_load_tool)
 
-    try:
-        agent = AgentLoop(provider, memory, tools)
+    agent = AgentLoop(provider, memory, tools)
+    return agent, tools
 
+
+async def interactive_loop(verbose: bool = False):
+    """Run a persistent interactive chat session."""
+    agent, tools = await setup_agent(verbose)
+    
+    console.print(Panel("[bold cyan]Light Agent Interactive Mode[/]\nType [bold red]/exit[/] or [bold red]/quit[/] to leave. Type [bold yellow]/status[/] for health check."))
+
+    try:
+        while True:
+            # Get user input
+            try:
+                user_input = console.input("\n[bold green]user> [/]").strip()
+            except EOFError:
+                break
+
+            if not user_input:
+                continue
+
+            # Handle Slash Commands
+            if user_input.startswith("/"):
+                cmd_parts = user_input.split()
+                cmd = cmd_parts[0].lower()
+
+                if cmd in ["/exit", "/quit"]:
+                    console.print("[yellow]Exiting...[/]")
+                    break
+                
+                elif cmd == "/new":
+                    agent.clear_messages()
+                    console.print("[bold green]Conversation cleared. Starting fresh...[/]")
+                    continue
+
+                elif cmd == "/status":
+                    mcp_count = len(tools.mcp_clients)
+                    skills = tools.skills_loader.list_skills()
+                    skill_count = len(skills)
+                    console.print(f"[bold blue]Status:[/]\n- MCP Clients: {mcp_count}\n- Skills Loaded: {skill_count}")
+                    for mcp in tools.mcp_clients:
+                        console.print(f"  - [green]✓[/] (MCP) {mcp.name}")
+                    for s in skills:
+                        console.print(f"  - [green]✓[/] (Skill) {s['name']}")
+                    continue
+
+                elif cmd == "/reset":
+                    console.print("[yellow]Resetting tools and MCP clients...[/]")
+                    # Cleanup current
+                    for mcp in tools.mcp_clients:
+                        await mcp.cleanup()
+                    # Re-setup
+                    agent, tools = await setup_agent(verbose)
+                    console.print("[bold green]Reset complete![/]")
+                    continue
+                
+                else:
+                    console.print(f"[bold red]Unknown command:[/] {cmd}")
+                    continue
+
+            # Run regular agent loop
+            result = await agent.run(user_input)
+            if verbose:
+                console.print(f"\n[bold green]Final Answer:[/]\n{result}")
+            else:
+                console.print(f"[bold cyan]lightagent:[/] {result}")
+
+    finally:
+        # Cleanup MCP clients
+        for mcp in tools.mcp_clients:
+            await mcp.cleanup()
+
+
+async def main_loop(prompt: str, verbose: bool = False):
+    agent, tools = await setup_agent(verbose)
+
+    try:
         if verbose:
             console.print(
                 Panel(f"[bold blue]Light Agent Initialized[/]\nWorkspace: {settings.WORKSPACE_DIR}")
@@ -123,11 +200,14 @@ async def main_loop(prompt: str, verbose: bool = False):
 
 @app.command()
 def chat(
-    prompt: str = typer.Argument(..., help="User prompt"),
+    prompt: str = typer.Argument(None, help="User prompt (leave empty for interactive chat)"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
 ):
     """Chat with the agent."""
-    asyncio.run(main_loop(prompt, verbose))
+    if prompt:
+        asyncio.run(main_loop(prompt, verbose))
+    else:
+        asyncio.run(interactive_loop(verbose))
 
 
 @app.command()
