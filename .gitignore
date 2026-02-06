@@ -14,3 +14,5 @@ wheels/
 .mypy_cache
 .coverage
 .pytest_cache
+**/long_memory.db
+**/servers_config.json
