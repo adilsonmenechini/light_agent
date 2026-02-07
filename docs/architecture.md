@@ -17,9 +17,11 @@ graph TD
     ToolReg --> MCP[MCP Clients]
     
     AL --> Session[SessionManager]
+    AL -.-> |auto-capture insights| LongMemory
     
     Memory --> Markdown[workspace/memory/MEMORY.md]
     LongMemory --> DB[data/memory/long_memory.db]
+    LongMemory --> |qa + observations| DB
     Session --> JSONL[~/.light_agent/sessions/*.jsonl]
     
     Provider --> LLM[External LLM Providers]
@@ -41,11 +43,37 @@ The system also orchestrates multiple models for efficiency:
     - The LLM receives the context and decides which skill/tool to call.
     - The `SkillLoader` or native tools execute the task.
     - Results are appended to the context.
-4. **Memory Update**: 
-    - At the end of the run, the agent generates a concise summary of the interaction.
-    - The question, answer, and summary are stored in the SQLite database (`long_memory.db`).
+4. **Memory Update**:
+    - **Q&A Summary**: The agent generates a concise summary of the interaction.
+    - **Tool Observations**: Insights from tool executions are automatically extracted and stored (read_file discoveries, command outputs, grep results, etc.).
+    - All data is stored in the SQLite database (`long_memory.db`) with type标记 (`qa` or `observation`).
 
-## Security Hardening
+## Memory System
+
+### Long-term Memory (SQLite)
+- Stores all interactions and tool observations in `data/memory/long_memory.db`
+- Uses BM25 for semantic search with time-based filtering (e.g., last 30 days)
+- Entry types: `qa` (question/answer) and `observation` (tool discoveries)
+
+### Tool Observations
+Inspired by Claude-Mem's progressive disclosure pattern, the agent automatically captures insights from tool executions:
+
+| Tool | Observation Captured |
+|------|---------------------|
+| `read_file` | "Lido arquivo: descobriu que..." |
+| `write_file` | "Criou/editou arquivo..." |
+| `exec` | "Executou comando que retornou..." |
+| `grep` | "Busca encontrou X resultados" |
+| `glob` | "Encontrou X arquivos..." |
+| `web_search` | "Pesquisa web retornou X resultados" |
+| `web_fetch` | "Conteúdo web extraído..." |
+
+Observations are only stored if:
+- Result is not empty or an error
+- Result has at least 20 characters
+- Results are truncated to 2000 characters
+
+This enables the agent to remember discoveries from past sessions (e.g., "onde foi que encontramos a config do banco?").
 
 Light Agent includes multiple security layers to prevent malicious use:
 

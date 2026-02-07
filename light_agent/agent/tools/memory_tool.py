@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 from rank_bm25 import BM25Okapi
 from light_agent.agent.tools.base import Tool
 
+
 class LongMemoryTool(Tool):
     """
     A tool to store and retrieve past interactions using SQLite and BM25 relevance ranking.
@@ -31,11 +32,19 @@ class LongMemoryTool(Tool):
                     question TEXT,
                     answer TEXT,
                     summary TEXT,
-                    raw_json TEXT
+                    raw_json TEXT,
+                    type TEXT DEFAULT 'qa'
                 )
             """)
             # Index for performance and safety
-            conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_cid_ts ON interactions(conversation_id, timestamp)")
+            conn.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_cid_ts ON interactions(conversation_id, timestamp)"
+            )
+            # Add type column if it doesn't exist (migration)
+            try:
+                conn.execute("ALTER TABLE interactions ADD COLUMN type TEXT DEFAULT 'qa'")
+            except sqlite3.OperationalError:
+                pass  # Column already exists
             conn.commit()
 
     def get_recent_context(self, limit: int = 5) -> str:
@@ -45,8 +54,7 @@ class LongMemoryTool(Tool):
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT * FROM interactions ORDER BY timestamp DESC LIMIT ?",
-                    (limit,)
+                    "SELECT * FROM interactions ORDER BY timestamp DESC LIMIT ?", (limit,)
                 )
                 rows = cursor.fetchall()
 
@@ -56,8 +64,10 @@ class LongMemoryTool(Tool):
             parts = ["## Recent Interactions (from Long-term Memory)"]
             # Reverse to show chronological order in prompt
             for row in reversed(rows):
-                parts.append(f"### [{row['timestamp']}] (ID: {row['conversation_id']})\n**Summary**: {row['summary']}\n**Q**: {row['question']}\n**A**: {row['answer']}")
-            
+                parts.append(
+                    f"### [{row['timestamp']}] (ID: {row['conversation_id']})\n**Summary**: {row['summary']}\n**Q**: {row['question']}\n**A**: {row['answer']}"
+                )
+
             return "\n\n".join(parts)
         except Exception as e:
             return f"Error retrieving context: {str(e)}"
@@ -74,24 +84,27 @@ class LongMemoryTool(Tool):
                     data = json.load(f)
                     if not isinstance(data, list):
                         continue
-                    
+
                     with sqlite3.connect(self.db_path) as conn:
                         for entry in data:
                             # Skip legacy markers
                             if entry.get("type") == "legacy_md":
                                 continue
-                                
-                            conn.execute("""
+
+                            conn.execute(
+                                """
                                 INSERT OR IGNORE INTO interactions (timestamp, conversation_id, question, answer, summary, raw_json)
                                 VALUES (?, ?, ?, ?, ?, ?)
-                            """, (
-                                entry.get("timestamp"),
-                                entry.get("conversation_id"),
-                                entry.get("question"),
-                                entry.get("answer"),
-                                entry.get("summary"),
-                                json.dumps(entry, ensure_ascii=False)
-                            ))
+                            """,
+                                (
+                                    entry.get("timestamp"),
+                                    entry.get("conversation_id"),
+                                    entry.get("question"),
+                                    entry.get("answer"),
+                                    entry.get("summary"),
+                                    json.dumps(entry, ensure_ascii=False),
+                                ),
+                            )
                         conn.commit()
             except Exception as e:
                 # Silent skip during migration to avoid crashing tool load
@@ -111,24 +124,24 @@ class LongMemoryTool(Tool):
             "type": "object",
             "properties": {
                 "action": {
-                    "type": "string", 
+                    "type": "string",
                     "enum": ["search", "store"],
-                    "description": "The action to perform: 'search' history or 'store' a new entry."
+                    "description": "The action to perform: 'search' history or 'store' a new entry.",
                 },
                 "query": {
-                    "type": "string", 
-                    "description": "The search term or question to find in history (required for search)."
+                    "type": "string",
+                    "description": "The search term or question to find in history (required for search).",
                 },
                 "period": {
-                    "type": "string", 
-                    "description": "Optional period filter for search, e.g., '30d' for 30 days, '12h' for 12 hours."
+                    "type": "string",
+                    "description": "Optional period filter for search, e.g., '30d' for 30 days, '12h' for 12 hours.",
                 },
                 "entry": {
                     "type": "object",
-                    "description": "The entry dictionary to store (required for store)."
-                }
+                    "description": "The entry dictionary to store (required for store).",
+                },
             },
-            "required": ["action"]
+            "required": ["action"],
         }
 
     async def execute(self, action: str, **kwargs: Any) -> str:
@@ -149,21 +162,47 @@ class LongMemoryTool(Tool):
     async def store(self, entry: Dict[str, Any]) -> str:
         """Stores a conversation entry in the database."""
         try:
+            entry_type = entry.get("type", "qa")  # "qa" or "observation"
+
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute(
-                    "INSERT INTO interactions (conversation_id, question, answer, summary, raw_json) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO interactions (conversation_id, question, answer, summary, raw_json, type) VALUES (?, ?, ?, ?, ?, ?)",
                     (
                         entry.get("conversation_id"),
-                        entry.get("question"),
-                        entry.get("answer"),
-                        entry.get("summary"),
-                        json.dumps(entry, ensure_ascii=False)
-                    )
+                        entry.get("question") or "",
+                        entry.get("answer") or "",
+                        entry.get("summary") or "",
+                        json.dumps(entry, ensure_ascii=False),
+                        entry_type,
+                    ),
                 )
                 conn.commit()
-            return "Entry stored successfully in long-term memory."
+            return f"Entry stored successfully in long-term memory (type: {entry_type})."
         except Exception as e:
             return f"Error storing entry: {str(e)}"
+
+    async def store_observation(
+        self,
+        conversation_id: str,
+        tool_name: str,
+        tool_input: Dict[str, Any],
+        tool_output: str,
+        insight: str,
+    ) -> str:
+        """
+        Stores a tool observation in the database.
+        This captures discoveries made during tool execution.
+        """
+        entry = {
+            "type": "observation",
+            "conversation_id": conversation_id,
+            "tool_name": tool_name,
+            "tool_input": tool_input,
+            "tool_output": tool_output,
+            "insight": insight,
+            "summary": insight,  # Use insight as summary for searchability
+        }
+        return await self.store(entry)
 
     async def search(self, query: str, period: Optional[str] = None) -> str:
         """
@@ -174,26 +213,28 @@ class LongMemoryTool(Tool):
             with sqlite3.connect(self.db_path) as conn:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
-                
+
                 sql = "SELECT * FROM interactions"
                 params = []
-                
+
                 if period:
                     # Simple period parsing
                     days = 0
-                    if period.endswith('d'):
+                    if period.endswith("d"):
                         days = int(period[:-1])
-                    elif period.endswith('h'):
+                    elif period.endswith("h"):
                         days = int(period[:-1]) / 24
-                    
+
                     if days > 0:
-                        since = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+                        since = (datetime.now() - timedelta(days=days)).strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        )
                         sql += " WHERE timestamp >= ?"
                         params.append(since)
-                
+
                 cursor.execute(sql, params)
                 rows = cursor.fetchall()
-            
+
             if not rows:
                 return "No matching interactions found."
 
@@ -201,7 +242,7 @@ class LongMemoryTool(Tool):
             # We rank based on summary, question, and answer combined
             corpus = []
             results_map = []
-            
+
             for row in rows:
                 text = f"{row['summary']} {row['question']} {row['answer']}"
                 corpus.append(text.lower().split())
@@ -209,10 +250,10 @@ class LongMemoryTool(Tool):
 
             bm25 = BM25Okapi(corpus)
             tokenized_query = query.lower().split()
-            
+
             # Get top 5 results
             top_n = bm25.get_top_n(tokenized_query, results_map, n=5)
-            
+
             if not top_n:
                 return "No relevant results found."
 
@@ -224,7 +265,7 @@ class LongMemoryTool(Tool):
                     f"  **Q**: {res['question']}\n"
                     f"  **A**: {res['answer']}\n"
                 )
-            
+
             return "\n".join(output)
 
         except Exception as e:
