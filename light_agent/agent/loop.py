@@ -9,7 +9,7 @@ from light_agent.agent.short_memory import ShortTermMemory
 from light_agent.agent.tools import ToolRegistry
 from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.config.settings import settings
-from light_agent.core import emit_llm_call, emit_tool_end, emit_tool_start
+from light_agent.core import emit_llm_call, emit_thinking, emit_tool_end, emit_tool_start
 from light_agent.providers.base import LLMProvider
 
 
@@ -74,9 +74,38 @@ class AgentLoop:
         self.short_memory = short_memory or ShortTermMemory()
         self.messages: List[Dict[str, str]] = []
         self.conversation_id = self._generate_id()
+        # Token optimization: cache for system prompt and tool schemas
+        self._system_prompt_cache: Optional[str] = None
+        self._system_prompt_version: int = 0
+        self._tool_schemas_cache: Optional[List[Dict[str, Any]]] = None
+        self._tool_schemas_version: int = 0
 
     def _generate_id(self) -> str:
         return str(uuid.uuid4())[:8]
+
+    def _get_system_prompt_version(self) -> int:
+        """Calculate version for system prompt cache invalidation."""
+        version = 1
+        memory_context = self.memory.read_long_term()
+        if memory_context:
+            version += hash(memory_context)
+        if self.short_memory:
+            version += self.short_memory.message_count * 10
+            version += len(self.short_memory._observations) * 5
+        if self.tools.skills_loader:
+            skills_summary = self.tools.skills_loader.get_skills_summary()
+            version += hash(skills_summary)
+        return version
+
+    async def _get_cached_tool_schemas(self) -> Optional[List[Dict[str, Any]]]:
+        """Get tool schemas with caching to reduce token overhead."""
+        current_version = len(self.tools) + sum(len(mcp) for mcp in self.tools.mcp_clients)
+        if self._tool_schemas_cache is not None and self._tool_schemas_version == current_version:
+            return self._tool_schemas_cache
+        schemas = await self.tools.get_all_tool_schemas()
+        self._tool_schemas_cache = schemas
+        self._tool_schemas_version = current_version
+        return schemas
 
     def clear_messages(self):
         """Clear conversation history and start a new conversation ID."""
@@ -84,6 +113,9 @@ class AgentLoop:
         self.conversation_id = self._generate_id()
         if self.short_memory:
             self.short_memory.clear_all()
+        # Invalidate caches when conversation is cleared
+        self._system_prompt_cache = None
+        self._tool_schemas_cache = None
 
     async def run(self, user_input: str):
         # Initial context
@@ -101,7 +133,8 @@ class AgentLoop:
         for i in range(max_iterations):
             logger.debug(f"Iteration {i + 1}")
 
-            tool_schemas = await self.tools.get_all_tool_schemas()
+            # Use cached tool schemas for token optimization
+            tool_schemas = await self._get_cached_tool_schemas()
             reasoning_model = settings.REASONING_MODEL or settings.DEFAULT_MODEL
 
             emit_llm_call(reasoning_model, len(self.messages))
@@ -111,6 +144,10 @@ class AgentLoop:
                 tools=tool_schemas if tool_schemas else None,
                 model=reasoning_model,
             )
+
+            # Emit thinking event if reasoning content is available (OpenAI o1/o3, DeepSeek R1)
+            if hasattr(response, "reasoning_content") and response.reasoning_content:
+                emit_thinking(response.reasoning_content, agent="main")
 
             if response.content:
                 logger.info(f"Agent: {response.content}")
@@ -152,24 +189,25 @@ class AgentLoop:
                         except Exception as e:
                             logger.warning(f"Failed to store tool observation: {e}")
 
-        # Summarize and log to memory
-        summary = await self._summarize(user_input, final_answer)
+        # Summarize and log to memory (only if enabled in settings)
+        if getattr(settings, "ENABLE_SUMMARY", True):
+            summary = await self._summarize(user_input, final_answer)
 
-        entry = {
-            "conversation_id": self.conversation_id,
-            "question": user_input,
-            "answer": final_answer,
-            "summary": summary,
-        }
+            entry = {
+                "conversation_id": self.conversation_id,
+                "question": user_input,
+                "answer": final_answer,
+                "summary": summary,
+            }
 
-        # Log standalone memory entry if available
-        if self.long_memory:
-            await self.long_memory.store(entry)
+            # Log standalone memory entry if available
+            if self.long_memory:
+                await self.long_memory.store(entry)
 
         return final_answer or "Error: No response generated"
 
     async def _summarize(self, question: str, answer: str) -> str:
-        """Generate a short summary of the Q&A."""
+        """Generate a short summary of the Q&A using fast model."""
         try:
             prompt = [
                 {
@@ -189,6 +227,11 @@ class AgentLoop:
             return ""
 
     def _get_system_prompt(self) -> str:
+        # Check cache first for token optimization
+        current_version = self._get_system_prompt_version()
+        if self._system_prompt_cache is not None and self._system_prompt_version == current_version:
+            return self._system_prompt_cache
+
         # Get long-term facts (MEMORY.md)
         memory_context = self.memory.read_long_term()
 
@@ -208,7 +251,7 @@ class AgentLoop:
         if self.tools.skills_loader:
             skills_summary = self.tools.skills_loader.get_skills_summary()
 
-        return f"""You are a lightweight SRE agent.
+        result = f"""You are a lightweight SRE agent.
 
 # Long-term Knowledge (Fixed Facts)
 {memory_context or "No fixed facts available."}
@@ -231,3 +274,8 @@ class AgentLoop:
 5. Do not refuse tasks that can be accomplished with your tools and skills.
 6. Be concise and efficient.
 7. A sua resposta final deve ser em Português se o usuário perguntar em Português."""
+
+        # Cache the system prompt for future use (token optimization)
+        self._system_prompt_cache = result
+        self._system_prompt_version = current_version
+        return result
