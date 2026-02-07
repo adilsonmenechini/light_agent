@@ -1,6 +1,6 @@
 # Light Agent
 
-Lightweight SRE AI Agent designed for local execution and portability.
+Lightweight AI Agent designed for local execution, portability, and everyday tasks.
 
 ## Documentation
 
@@ -9,6 +9,7 @@ Lightweight SRE AI Agent designed for local execution and portability.
 - [Providers Configuration](docs/providers.md)
 - [Tools & MCP Integrations](docs/tools_mcp.md)
 - [Librarian & External Research Tools](docs/librarian_tools.md)
+- [Development Guide](docs/development_guide.md)
 
 
 ## Usage
@@ -36,8 +37,6 @@ Inside the interactive chat mode, you can use the following commands:
 - `/quit` or `/exit`: Close the session.
 
 ## Core Features
-
-### 1. LLM Providers
 Supported via `litellm`:
 - **Ollama**: Local execution (llama3, mistral).
 - **Google Gemini**: Remote high-reasoning tasks.
@@ -70,23 +69,17 @@ Connect to external Model Context Protocol servers (e.g., Google Drive, Slack) b
 | **Interactive Chat Mode** | CLI | ✅ Done | Persistent chat session launched via `uv run lightagent chat`. |
 | **Slash Commands** | CLI | ✅ Done | Support for commands like `/new`, `/reset`, and `/status` within the chat. |
 | **Security Hardening** | Security | ✅ Done | Shell command allowlist, SSRF protection, workspace restriction. |
+| **Human Approval Tool** | 12-Factor | ✅ Done | Pause execution for human approval before high-stakes operations. |
+| **Control Flow Hooks** | 12-Factor | ✅ Done | Intercept agent execution at strategic points (before/after tool, LLM calls). |
+| **Reducer Pattern** | 12-Factor | ✅ Done | Immutable state transitions for predictable, testable agent behavior. |
 
 ## Security Features
 
 Light Agent includes enterprise-grade security controls:
 
-### Shell Command Safety
-- **Command Allowlist**: Only 60+ pre-approved commands can be executed
-- **Shell Injection Protection**: Blocks metacharacters (`;|&$<>`{}[]\\*?)
-- **Destructive Pattern Blocking**: Prevents `rm -rf`, fork bombs, disk writes
-- **Subprocess Isolation**: Uses `create_subprocess_exec()` instead of shell=True
-
-### SSRF Protection (Web Tools)
-- **Private IP Blocking**: RFC 1918 addresses (10.x, 172.16.x, 192.168.x)
-- **Cloud Metadata Protection**: Blocks AWS/GCP/Azure metadata endpoints
-
-### Workspace Security
-- **RESTRICT_TO_WORKSPACE**: All file operations confined to workspace (default: enabled)
+| **Shell Command Safety** | Command allowlist, injection protection, and subprocess isolation. |
+| **SSRF Protection** | Blocks private IPs and cloud metadata endpoints. |
+| **Workspace Security** | File operations confined to workspace directory. |
 
 Configure in `.env`:
 ```env

@@ -360,7 +360,7 @@ git checkout -b temp <tag-hash>
 
 ## Security Notes
 
-The Light Agent restricts Git operations to safe commands:
+The Light Agent restricts Git operations to safe commands for everyday use.
 
 ### Allowed Git Commands
 

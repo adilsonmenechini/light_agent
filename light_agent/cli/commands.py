@@ -12,6 +12,8 @@ from light_agent.agent.skills import SkillsLoader
 from light_agent.agent.subagent import SubagentManager
 from light_agent.agent.tools import (
     ExecTool,
+    GitHubCheckTool,
+    GitHubPublicTool,
     GitHubTool,
     GitHubWorkflowTool,
     GitTool,
@@ -28,6 +30,8 @@ from light_agent.agent.tools import (
 from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.agent.tools.native import NativeTool
 from light_agent.config.settings import settings
+from light_agent.core import event_bus
+from light_agent.core.console_subscriber import setup_console_subscriber
 from light_agent.providers.litellm_provider import LiteLLMProvider
 from light_agent.session.manager import SessionManager
 
@@ -125,6 +129,8 @@ async def setup_agent(verbose: bool = False):
     tools.register(WebFetchTool())
     tools.register(GitTool())
     tools.register(GitHubTool())
+    tools.register(GitHubPublicTool())
+    tools.register(GitHubCheckTool())
     tools.register(GitHubWorkflowTool())
     tools.register(SpawnTool(manager=subagent_manager))
     tools.register(ParallelSpawnTool(manager=subagent_manager))
@@ -150,6 +156,9 @@ async def setup_agent(verbose: bool = False):
 async def interactive_loop(verbose: bool = False):
     """Run a persistent interactive chat session."""
     agent, tools = await setup_agent(verbose)
+
+    # Enable thinking events display
+    setup_console_subscriber(event_bus)
 
     console.print(
         Panel(

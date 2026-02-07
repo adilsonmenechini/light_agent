@@ -25,10 +25,10 @@ Agent definitions for Claude Desktop or compatible CLI.
 Example agent definition:
 ```markdown
 ---
-name: Technician
-description: Solves technical SRE problems
+name: Task Assistant
+description: Helps with everyday tasks and questions
 ---
-Your goal is to analyze logs and suggest fixes...
+Your goal is to assist users with their daily tasks...
 ```
 
 ### `light_agent/base/skills/`
@@ -40,7 +40,7 @@ Bundled skills:
 - `summarize/`: Text/URL summarization
 - `task-management/`: Complex task workflows
 - `tmux/`: TMUX session management
-- `check_logs/`: Log analysis utilities
+- `code-search/`: Production code patterns from open source repos
 
 ### `light_agent/base/memory/`
 - `MEMORY.md`: **Fixed Facts**. Long-term global context distilled by the agent. Always injected into context.

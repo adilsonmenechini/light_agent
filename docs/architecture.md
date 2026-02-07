@@ -1,6 +1,6 @@
 # Architecture Overview - Light Agent
 
-Light Agent is a lightweight, framework-agnostic agentic system designed for local execution, portability, and simplicity. It uses a file-based approach for configuration, skills, and memory.
+Light Agent is a lightweight, framework-agnostic agentic system designed for local execution, portability, and everyday tasks. It uses a file-based approach for configuration, skills, and memory.
 
 ## System Architecture
 
