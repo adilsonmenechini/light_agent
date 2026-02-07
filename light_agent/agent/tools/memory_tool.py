@@ -2,9 +2,10 @@ import json
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from rank_bm25 import BM25Okapi
+
 from light_agent.agent.tools.base import Tool
 
 
@@ -106,7 +107,7 @@ class LongMemoryTool(Tool):
                                 ),
                             )
                         conn.commit()
-            except Exception as e:
+            except Exception:
                 # Silent skip during migration to avoid crashing tool load
                 continue
 
@@ -144,8 +145,9 @@ class LongMemoryTool(Tool):
             "required": ["action"],
         }
 
-    async def execute(self, action: str, **kwargs: Any) -> str:
+    async def execute(self, **kwargs: Any) -> str:
         """Main execution point for the tool."""
+        action = kwargs.get("action", "")
         if action == "store":
             entry = kwargs.get("entry")
             if not entry:

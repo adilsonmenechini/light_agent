@@ -182,7 +182,7 @@ class AgentLoop:
         if self.tools.skills_loader:
             skills_summary = self.tools.skills_loader.get_skills_summary()
 
-        return f"""You are a lightweight SRE agent. 
+        return f"""You are a lightweight SRE agent.
 
 # Long-term Knowledge (Fixed Facts)
 {memory_context or "No fixed facts available."}

@@ -44,30 +44,25 @@ class MCPClient:
         )
 
         # Resolve command path if it's npx or similar
-        cwd = None
         if final_command == "npx":
             final_command = shutil.which("npx") or "npx"
-            # Set cwd to workspace to pick up local node_modules if needed
-            # But normally npx handles this.
-            pass
 
-        
         server_params = StdioServerParameters(
-            command=final_command, 
-            args=final_args, 
-            env=self.env or dict(os.environ)
+            command=final_command, args=final_args, env=self.env or dict(os.environ)
         )
 
         try:
             # Use context manager to suppress MCP server startup messages if requested
             ctx = suppress_stdout() if self.suppress_output else contextlib.nullcontext()
-            
+
             with ctx:
-                stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
+                stdio_transport = await self.exit_stack.enter_async_context(
+                    stdio_client(server_params)
+                )
                 read, write = stdio_transport
                 session = await self.exit_stack.enter_async_context(ClientSession(read, write))
                 await session.initialize()
-            
+
             self.session = session
             logger.success(f"Connected to MCP server: {self.name}")
         except Exception as e:
@@ -84,7 +79,9 @@ class MCPClient:
             logger.debug(f"Suppressed cleanup error for {self.name}: {type(e).__name__}: {e}")
         except Exception as e:
             # Log unexpected errors but don't crash
-            logger.warning(f"Unexpected error during cleanup for {self.name}: {type(e).__name__}: {e}")
+            logger.warning(
+                f"Unexpected error during cleanup for {self.name}: {type(e).__name__}: {e}"
+            )
 
     async def get_tools(self) -> List[Dict[str, Any]]:
         if not self.session:

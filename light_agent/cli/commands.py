@@ -10,7 +10,6 @@ from light_agent.agent.mcp_client import MCPClient
 from light_agent.agent.memory import MemoryStore
 from light_agent.agent.skills import SkillsLoader
 from light_agent.agent.subagent import SubagentManager
-from light_agent.session.manager import SessionManager
 from light_agent.agent.tools import (
     ExecTool,
     GitHubTool,
@@ -30,6 +29,7 @@ from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.agent.tools.native import NativeTool
 from light_agent.config.settings import settings
 from light_agent.providers.litellm_provider import LiteLLMProvider
+from light_agent.session.manager import SessionManager
 
 app = typer.Typer(name="lightagent", help="Lightweight SRE AI Agent", no_args_is_help=True)
 console = Console()
@@ -184,6 +184,13 @@ async def interactive_loop(verbose: bool = False):
 
                 elif cmd == "/status":
                     mcp_count = len(tools.mcp_clients)
+                    if tools.skills_loader is None:
+                        console.print(
+                            "[bold blue]Status:[/]\n- MCP Clients: {mcp_count}\n- Skills Loaded: 0"
+                        )
+                        for mcp in tools.mcp_clients:
+                            console.print(f"  - [green]✓[/] (MCP) {mcp.name}")
+                        continue
                     skills = tools.skills_loader.list_skills()
                     skill_count = len(skills)
                     console.print(

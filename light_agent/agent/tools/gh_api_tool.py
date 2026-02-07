@@ -2,8 +2,6 @@
 
 import asyncio
 import json
-import subprocess
-from pathlib import Path
 from typing import Any, Optional
 
 from light_agent.agent.tools.base import Tool
@@ -156,7 +154,7 @@ class GitHubTool(Tool):
         args: list[str],
         capture_output: bool = True,
         json_output: bool = True,
-    ) -> tuple[int, str, str]:
+    ) -> tuple[int | None, str, str]:
         """Execute a gh command."""
         cmd = ["gh"] + args
 

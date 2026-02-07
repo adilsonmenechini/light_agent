@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import subprocess
 from typing import Any, Optional
 
 from light_agent.agent.tools.base import Tool
@@ -85,7 +84,7 @@ class GitHubWorkflowTool(Tool):
         args: list[str],
         owner: Optional[str] = None,
         repo: Optional[str] = None,
-    ) -> tuple[int, str, str]:
+    ) -> tuple[int | None, str, str]:
         """Execute a gh command."""
         repo_str = self._get_repo(owner, repo)
         repo_arg = ["--repo", repo_str] if repo_str else []

@@ -1,6 +1,6 @@
 """Parallel spawn tool for creating multiple background subagents."""
 
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 from light_agent.agent.tools.base import Tool
 
@@ -46,7 +46,10 @@ class ParallelSpawnTool(Tool):
                         "type": "object",
                         "properties": {
                             "task": {"type": "string", "description": "The task for the subagent"},
-                            "label": {"type": "string", "description": "Optional label for the task"},
+                            "label": {
+                                "type": "string",
+                                "description": "Optional label for the task",
+                            },
                         },
                         "required": ["task"],
                     },
@@ -56,8 +59,9 @@ class ParallelSpawnTool(Tool):
             "required": ["tasks"],
         }
 
-    async def execute(self, tasks: List[dict[str, Any]], **kwargs: Any) -> str:
+    async def execute(self, **kwargs: Any) -> str:
         """Spawn multiple subagents."""
+        tasks = kwargs.get("tasks", [])
         results = []
         for task_info in tasks:
             task = task_info["task"]
@@ -69,5 +73,5 @@ class ParallelSpawnTool(Tool):
                 origin_chat_id=self._origin_chat_id,
             )
             results.append(status)
-        
+
         return "\n".join(results)
