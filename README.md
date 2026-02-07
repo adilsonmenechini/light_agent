@@ -9,6 +9,7 @@ Lightweight AI Agent designed for local execution, portability, and everyday tas
 - [Providers Configuration](docs/providers.md)
 - [Tools & MCP Integrations](docs/tools_mcp.md)
 - [Librarian & External Research Tools](docs/librarian_tools.md)
+- [Development Guide](docs/development_guide.md)
 
 
 ## Usage
