@@ -25,10 +25,14 @@ graph TD
     Provider --> LLM[External LLM Providers]
 ```
 
-## Multi-Agent Logic
+## Multi-Agent & Multi-Model Orchestration
 The system supports spawning background subagents. These are isolated agent instances that share the same provider but have a focused system prompt and localized tools. 
 
 Concurrent execution is supported via `SubagentManager`, allowing the main agent to delegate multiple tasks in parallel and coordinate their results.
+
+The system also orchestrates multiple models for efficiency:
+- **Reasoning Loop**: Uses the `REASONING_MODEL` for complex planning and tool use.
+- **Utility Tasks**: Uses the `FAST_MODEL` for lighter tasks such as interaction summarization, ensuring low latency and reduced cost/resource usage.
 
 ## Core Flow
 1. **Input**: User command via CLI.
