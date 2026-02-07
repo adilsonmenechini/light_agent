@@ -15,4 +15,5 @@ wheels/
 .coverage
 .pytest_cache
 **/long_memory.db
-**/servers_config.json
+workspace/servers_config.json
+.serena
