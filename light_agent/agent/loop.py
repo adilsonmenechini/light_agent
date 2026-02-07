@@ -146,8 +146,9 @@ class AgentLoop:
             )
 
             # Emit thinking event if reasoning content is available (OpenAI o1/o3, DeepSeek R1)
-            if hasattr(response, "reasoning_content") and response.reasoning_content:
-                emit_thinking(response.reasoning_content, agent="main")
+            reasoning = getattr(response, "reasoning_content", None)
+            if reasoning:
+                emit_thinking(reasoning, agent="main")
 
             if response.content:
                 logger.info(f"Agent: {response.content}")
