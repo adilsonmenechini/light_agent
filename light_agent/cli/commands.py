@@ -8,6 +8,7 @@ from rich.panel import Panel
 from light_agent.agent.loop import AgentLoop
 from light_agent.agent.mcp_client import MCPClient
 from light_agent.agent.memory import MemoryStore
+from light_agent.agent.short_memory import ShortTermMemory
 from light_agent.agent.skills import SkillsLoader
 from light_agent.agent.subagent import SubagentManager
 from light_agent.agent.tools import (
@@ -97,6 +98,7 @@ async def setup_agent(verbose: bool = False):
 
     session_manager = SessionManager(settings.WORKSPACE_DIR)
     long_memory = LongMemoryTool(settings.WORKSPACE_DIR)
+    short_memory = ShortTermMemory()
     subagent_manager = SubagentManager(provider, settings.WORKSPACE_DIR, session_manager)
 
     # Register Native Tools
@@ -149,7 +151,13 @@ async def setup_agent(verbose: bool = False):
     )
     tools.register(system_load_tool)
 
-    agent = AgentLoop(provider, memory, tools, long_memory=long_memory)
+    agent = AgentLoop(
+        provider=provider,
+        memory=memory,
+        tools=tools,
+        long_memory=long_memory,
+        short_memory=short_memory,
+    )
     return agent, tools
 
 
