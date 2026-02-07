@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, Any
 
 from light_agent.agent.tools.base import Tool
+from light_agent.core import emit_agent_end, emit_agent_start
 
 if TYPE_CHECKING:
     from light_agent.agent.subagent import SubagentManager
@@ -59,9 +60,16 @@ class SpawnTool(Tool):
         """Spawn a subagent to execute the given task."""
         task = kwargs.get("task", "")
         label = kwargs.get("label")
-        return await self._manager.spawn(
+
+        agent_name = label or "subagent"
+        emit_agent_start(agent_name, task)
+
+        result = await self._manager.spawn(
             task=task,
             label=label,
             origin_channel=self._origin_channel,
             origin_chat_id=self._origin_chat_id,
         )
+
+        emit_agent_end(agent_name, result[:100])
+        return result

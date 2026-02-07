@@ -8,6 +8,7 @@ from light_agent.agent.memory import MemoryStore
 from light_agent.agent.tools import ToolRegistry
 from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.config.settings import settings
+from light_agent.core import emit_llm_call, emit_tool_end, emit_tool_start
 from light_agent.providers.base import LLMProvider
 
 
@@ -93,6 +94,9 @@ class AgentLoop:
 
             tool_schemas = await self.tools.get_all_tool_schemas()
             reasoning_model = settings.REASONING_MODEL or settings.DEFAULT_MODEL
+
+            emit_llm_call(reasoning_model, len(self.messages))
+
             response = await self.provider.generate(
                 self.messages,
                 tools=tool_schemas if tool_schemas else None,
@@ -112,7 +116,9 @@ class AgentLoop:
                 name = tool_call.function.name
                 args = json.loads(tool_call.function.arguments)
 
+                emit_tool_start(name, args)
                 result = await self.tools.call_tool(name, args)
+                emit_tool_end(name, result)
 
                 self.messages.append(
                     {"role": "tool", "tool_call_id": tool_call.id, "name": name, "content": result}
@@ -194,8 +200,9 @@ class AgentLoop:
 
 # Instructions
 1. Use the available tools to fulfill user requests.
-2. If you need to interact with GitHub, use the 'gh' CLI via the 'exec' tool.
-3. If you need to search the web, use 'web_search'.
+2. For GitHub public repositories WITHOUT authentication: use 'github_public' tool with action='repo_info', 'repo_contents', 'repo_tree', or 'file_content'.
+3. For GitHub with authentication (PRs, issues, etc.): use 'github' tool (requires 'gh auth login').
+4. If you need to search the web, use 'web_search'.
 4. Search historical conversations using 'long_memory.search' if you need to recall information from past sessions or technical context provided previously. Prefer this over assuming the user will repeat themselves.
 5. Do not refuse tasks that can be accomplished with your tools and skills.
 6. Be concise and efficient.

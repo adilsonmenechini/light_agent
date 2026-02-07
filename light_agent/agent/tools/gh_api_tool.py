@@ -16,7 +16,7 @@ class GitHubTool(Tool):
 
     @property
     def description(self) -> str:
-        return "GitHub operations using gh CLI. Supports PRs, issues, releases, and API calls with JSON output parsing."
+        return "GitHub operations using gh CLI (REQUIRES authentication via gh auth). Use for: PRs, issues, releases, commits, and authenticated API calls. For public repo contents WITHOUT auth, use 'github_public' tool instead."
 
     @property
     def parameters(self) -> dict[str, Any]:
@@ -49,6 +49,8 @@ class GitHubTool(Tool):
                         "run_rerun",
                         "run_cancel",
                         "repo_view",
+                        "repo_list",
+                        "repo_contents",
                         "api",
                     ],
                     "description": "The GitHub action to perform",
@@ -505,6 +507,29 @@ class GitHubTool(Tool):
             if returncode != 0:
                 return f"Error: {stderr}"
             return await self._parse_json(stdout)
+
+        elif action == "repo_list":
+            """List repository contents (files and directories)."""
+            path = kwargs.get("path", "")
+            args = ["repo", "view", "--json", "name"]
+            if path:
+                args.append(path)
+            returncode, stdout, stderr = await self._run_gh(args + repo_arg)
+            if returncode != 0:
+                return f"Error: {stderr}"
+            return stdout
+
+        elif action == "repo_contents":
+            """Get file content from repository using gh api."""
+            path = kwargs.get("path", "")
+            if not path:
+                return "Error: path required for repo_contents"
+            endpoint = f"repos/{repo_str}/contents/{path}" if repo_str else f"contents/{path}"
+            args = ["api", endpoint, "--method", "GET"]
+            returncode, stdout, stderr = await self._run_gh(args + repo_arg)
+            if returncode != 0:
+                return f"Error: {stderr}"
+            return stdout
 
         # API calls
         elif action == "api":
