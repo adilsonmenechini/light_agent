@@ -152,14 +152,6 @@ fix(tools): resolve memory leak in approval tool
 docs(readme): update usage instructions
 ```
 
-### 8. Pull Request Process
-
-1. Push branch to remote
-2. Create PR via GitHub or `gh pr create`
-3. Ensure CI checks pass
-4. Request review
-5. Address feedback
-6. Merge and delete branch
 
 ```bash
 # Push branch
@@ -169,7 +161,7 @@ git push -u origin feature/my-feature
 gh pr create --title "feat: Add my feature" --body "Description..."
 ```
 
-### 9. Directory Structure Reference
+### 8. Directory Structure Reference
 
 ```
 light_agent/
@@ -187,7 +179,7 @@ light_agent/
 └── utils/              # Utilities
 ```
 
-### 10. Common Patterns
+### 9. Common Patterns
 
 #### Using Pydantic Models
 
@@ -247,6 +239,3 @@ pytest light_agent/
 git add .
 git commit -m "feat(scope): description"
 
-# Push
-git push -u origin feature/new-feature
-```
