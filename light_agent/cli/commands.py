@@ -39,8 +39,14 @@ async def setup_agent(verbose: bool = False):
         logger.remove()  # Remove default handler
         logger.add(lambda msg: None, level="WARNING")  # Only show warnings and errors
 
-    # Setup
-    model = settings.DEFAULT_MODEL
+    # Setup - prioritize REASONING_MODEL > FAST_MODEL > DEFAULT_MODEL
+    if settings.REASONING_MODEL:
+        model = settings.REASONING_MODEL
+    elif settings.FAST_MODEL:
+        model = settings.FAST_MODEL
+    else:
+        model = settings.DEFAULT_MODEL
+
     api_key = None
     base_url = None
 
