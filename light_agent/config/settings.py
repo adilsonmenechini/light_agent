@@ -5,9 +5,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Workspace
+    # Base directory (default) and Workspace (optional override)
+    BASE_DIR: Path = Path("./light_agent/base")
     WORKSPACE_DIR: Path = Path("./workspace")
     RESTRICT_TO_WORKSPACE: bool = True
+
+    @property
+    def effective_base_dir(self) -> Path:
+        """Use BASE_DIR if exists, fallback to WORKSPACE_DIR for backwards compatibility."""
+        if self.BASE_DIR.exists():
+            return self.BASE_DIR
+        return self.WORKSPACE_DIR
 
     # LLM Configuration
     OLLAMA_BASE_URL: str = "http://localhost:11434"
@@ -31,8 +39,8 @@ class Settings(BaseSettings):
 
     @property
     def mcp_servers(self) -> Dict[str, str]:
-        """Extrae servidores MCP definidos en workspace/servers_config.json."""
-        config_path = self.WORKSPACE_DIR / "servers_config.json"
+        """Load MCP servers from BASE_DIR first, fallback to WORKSPACE_DIR."""
+        config_path = self.effective_base_dir / "servers_config.json"
         if not config_path.exists():
             return {}
 
