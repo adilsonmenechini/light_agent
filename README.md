@@ -8,6 +8,7 @@ Lightweight SRE AI Agent designed for local execution and portability.
 - [Workspace Structure](docs/workspace.md)
 - [Providers Configuration](docs/providers.md)
 - [Tools & MCP Integrations](docs/tools_mcp.md)
+- [Librarian & External Research Tools](docs/librarian_tools.md)
 
 
 ## Usage
@@ -46,6 +47,8 @@ Supported via `litellm`:
 - **Native Tools**: `exec`, `list_dir`, `read_file`, `write_file`, `web_search`, `web_fetch`.
 - **Markdown Skills**: Discovered in `light_agent/base/skills/` (fallback to `workspace/skills/`).
 - **Sub-agents**: Task delegation via `spawn`, `parallel_spawn`, and result coordination via `wait_subagents`.
+- **CodeSearch Skill**: Production patterns from open source repos (`workspace/skills/codesearch/`)
+- **Librarian Agent**: External documentation research specialist (`workspace/agents/librarian.md`)
 
 ### 3. MCP Integrations
 Connect to external Model Context Protocol servers (e.g., Google Drive, Slack) by configuring `light_agent/base/servers_config.json` (or `workspace/servers_config.json`).
