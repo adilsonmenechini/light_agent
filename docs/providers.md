@@ -18,4 +18,24 @@ Integration for LLMStudy specific endpoints.
 - **Config**: Compatible with OpenAI-style endpoint configuration.
 
 ## Provider Abstraction
-The `src/providers/base.py` defines the `LLMProvider` interface which all implementations must follow (Generate, Stream, Tool Call).
+## Specialized Model Roles
+
+Light Agent supports using different models for different tasks to balance speed and reasoning capability.
+
+### Configuration
+
+You can define specialized models in your `.env` file:
+
+- **`DEFAULT_MODEL`**: The fallback model used if specialized roles are not defined.
+- **`FAST_MODEL`**: Used for routine, low-latency tasks like interaction summarization.
+- **`REASONING_MODEL`**: Used for the main agent loop, planning, and complex tool execution.
+
+Example `.env` setup:
+```env
+DEFAULT_MODEL="ollama/llama3"
+FAST_MODEL="ollama/phi3"      # Lightweight/Fast
+REASONING_MODEL="ollama/llama3:70b" # Powerful/Reasoning
+```
+
+### Subagents
+Subagents default to using the `REASONING_MODEL`. However, when spawning a subagent via the `spawn` tool, a specific model can be optionally provided to override this default.

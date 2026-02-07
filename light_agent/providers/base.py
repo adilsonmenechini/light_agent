@@ -17,7 +17,10 @@ class LLMResponse(BaseModel):
 class LLMProvider(ABC):
     @abstractmethod
     async def generate(
-        self, messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] = None
+        self,
+        messages: List[Dict[str, str]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        model: Optional[str] = None,
     ) -> LLMResponse:
         pass
 

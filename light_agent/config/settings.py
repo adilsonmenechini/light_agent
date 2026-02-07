@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     LLMSTUDY_BASE_URL: Optional[str] = None
 
     DEFAULT_MODEL: str = "ollama/llama3"
+    FAST_MODEL: Optional[str] = None
+    REASONING_MODEL: Optional[str] = None
 
     # Tool Configuration
     ENABLED_TOOLS: str = "shell_command,fetch_content"

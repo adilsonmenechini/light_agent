@@ -46,7 +46,7 @@ class SubagentManager:
         self.provider = provider
         self.workspace = workspace
         self.session_manager = session_manager
-        self.model = model or provider.get_default_model()
+        self.model = model or settings.REASONING_MODEL or provider.get_default_model()
         self.exec_config = exec_config or ExecToolConfig()
         self._running_tasks: dict[str, asyncio.Task[str]] = {}
         self._results: dict[str, dict[str, Any]] = {}
@@ -55,6 +55,7 @@ class SubagentManager:
         self,
         task: str,
         label: str | None = None,
+        model: str | None = None,
         origin_channel: str = "cli",
         origin_chat_id: str = "direct",
     ) -> str:
@@ -79,7 +80,8 @@ class SubagentManager:
         }
 
         # Create background task
-        bg_task = asyncio.create_task(self._run_subagent(task_id, task, display_label, origin))
+        model_to_use = model or self.model
+        bg_task = asyncio.create_task(self._run_subagent(task_id, task, display_label, origin, model_to_use))
         self._running_tasks[task_id] = bg_task
 
         # Cleanup when done (but results are kept in self._results)
@@ -97,6 +99,7 @@ class SubagentManager:
         task: str,
         label: str,
         origin: dict[str, str],
+        model: str,
     ) -> str:
         """Execute the subagent task and announce the result."""
         logger.info(f"Subagent [{task_id}] starting task: {label}")
@@ -142,6 +145,7 @@ class SubagentManager:
                 response = await self.provider.generate(
                     messages=messages,
                     tools=tools.get_definitions(),
+                    model=model,
                 )
 
                 if response.has_tool_calls:

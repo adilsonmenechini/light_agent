@@ -14,10 +14,14 @@ class LiteLLMProvider(LLMProvider):
         self.base_url = base_url
 
     async def generate(
-        self, messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] = None
+        self,
+        messages: List[Dict[str, str]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        model: Optional[str] = None,
     ) -> LLMResponse:
+        model_to_use = model or self.model
         response = await litellm.acompletion(
-            model=self.model,
+            model=model_to_use,
             messages=messages,
             tools=tools,
             api_key=self.api_key,

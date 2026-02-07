@@ -7,6 +7,7 @@ from loguru import logger
 from light_agent.agent.memory import MemoryStore
 from light_agent.agent.tools import ToolRegistry
 from light_agent.agent.tools.memory_tool import LongMemoryTool
+from light_agent.config.settings import settings
 from light_agent.providers.base import LLMProvider
 
 
@@ -41,7 +42,9 @@ class AgentLoop:
 
             tool_schemas = await self.tools.get_all_tool_schemas()
             response = await self.provider.generate(
-                self.messages, tools=tool_schemas if tool_schemas else None
+                self.messages,
+                tools=tool_schemas if tool_schemas else None,
+                model=settings.REASONING_MODEL,
             )
 
             if response.content:
@@ -86,7 +89,7 @@ class AgentLoop:
                 {"role": "system", "content": "You are a helpful assistant that summarizes conversations concisely in Portuguese."},
                 {"role": "user", "content": f"Resuma a seguinte interação entre um usuário e um assistente SRE em uma frase curta:\nPergunta: {question}\nResposta: {answer}"}
             ]
-            response = await self.provider.generate(prompt)
+            response = await self.provider.generate(prompt, model=settings.FAST_MODEL)
             return response.content.strip() if response.content else ""
         except Exception as e:
             logger.warning(f"Failed to generate summary: {e}")
