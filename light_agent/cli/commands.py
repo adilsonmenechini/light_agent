@@ -32,16 +32,21 @@ app = typer.Typer(name="lightagent", help="Lightweight SRE AI Agent", no_args_is
 console = Console()
 
 
-
 async def setup_agent(verbose: bool = False):
     """Common setup for AgentLoop and its dependencies."""
     # Configure logging based on verbose flag
     if not verbose:
         logger.remove()  # Remove default handler
         logger.add(lambda msg: None, level="WARNING")  # Only show warnings and errors
-    
-    # Setup
-    model = settings.DEFAULT_MODEL
+
+    # Setup - prioritize REASONING_MODEL > FAST_MODEL > DEFAULT_MODEL
+    if settings.REASONING_MODEL:
+        model = settings.REASONING_MODEL
+    elif settings.FAST_MODEL:
+        model = settings.FAST_MODEL
+    else:
+        model = settings.DEFAULT_MODEL
+
     api_key = None
     base_url = None
 
@@ -56,7 +61,7 @@ async def setup_agent(verbose: bool = False):
         if not model.startswith("openai/"):
             # Ensure it has the openai/ prefix for custom endpoints
             model = f"openai/{model}"
-    
+
     provider = LiteLLMProvider(
         model=model,
         api_key=api_key,
@@ -88,10 +93,31 @@ async def setup_agent(verbose: bool = False):
     subagent_manager = SubagentManager(provider, settings.WORKSPACE_DIR, session_manager)
 
     # Register Native Tools
-    tools.register(ExecTool())
-    tools.register(ListDirTool())
-    tools.register(ReadFileTool())
-    tools.register(WriteFileTool())
+    tools.register(
+        ExecTool(
+            working_dir=str(settings.WORKSPACE_DIR),
+            restrict_to_workspace=settings.RESTRICT_TO_WORKSPACE,
+            workspace=settings.WORKSPACE_DIR,
+        )
+    )
+    tools.register(
+        ListDirTool(
+            workspace=settings.WORKSPACE_DIR,
+            restrict_to_workspace=settings.RESTRICT_TO_WORKSPACE,
+        )
+    )
+    tools.register(
+        ReadFileTool(
+            workspace=settings.WORKSPACE_DIR,
+            restrict_to_workspace=settings.RESTRICT_TO_WORKSPACE,
+        )
+    )
+    tools.register(
+        WriteFileTool(
+            workspace=settings.WORKSPACE_DIR,
+            restrict_to_workspace=settings.RESTRICT_TO_WORKSPACE,
+        )
+    )
     tools.register(WebSearchTool())
     tools.register(WebFetchTool())
     tools.register(SpawnTool(manager=subagent_manager))
@@ -118,8 +144,12 @@ async def setup_agent(verbose: bool = False):
 async def interactive_loop(verbose: bool = False):
     """Run a persistent interactive chat session."""
     agent, tools = await setup_agent(verbose)
-    
-    console.print(Panel("[bold cyan]Light Agent Interactive Mode[/]\nType [bold red]/exit[/] or [bold red]/quit[/] to leave. Type [bold yellow]/status[/] for health check."))
+
+    console.print(
+        Panel(
+            "[bold cyan]Light Agent Interactive Mode[/]\nType [bold red]/exit[/] or [bold red]/quit[/] to leave. Type [bold yellow]/status[/] for health check."
+        )
+    )
 
     try:
         while True:
@@ -140,7 +170,7 @@ async def interactive_loop(verbose: bool = False):
                 if cmd in ["/exit", "/quit"]:
                     console.print("[yellow]Exiting...[/]")
                     break
-                
+
                 elif cmd == "/new":
                     agent.clear_messages()
                     console.print("[bold green]Conversation cleared. Starting fresh...[/]")
@@ -150,7 +180,9 @@ async def interactive_loop(verbose: bool = False):
                     mcp_count = len(tools.mcp_clients)
                     skills = tools.skills_loader.list_skills()
                     skill_count = len(skills)
-                    console.print(f"[bold blue]Status:[/]\n- MCP Clients: {mcp_count}\n- Skills Loaded: {skill_count}")
+                    console.print(
+                        f"[bold blue]Status:[/]\n- MCP Clients: {mcp_count}\n- Skills Loaded: {skill_count}"
+                    )
                     for mcp in tools.mcp_clients:
                         console.print(f"  - [green]✓[/] (MCP) {mcp.name}")
                     for s in skills:
@@ -166,7 +198,7 @@ async def interactive_loop(verbose: bool = False):
                     agent, tools = await setup_agent(verbose)
                     console.print("[bold green]Reset complete![/]")
                     continue
-                
+
                 else:
                     console.print(f"[bold red]Unknown command:[/] {cmd}")
                     continue

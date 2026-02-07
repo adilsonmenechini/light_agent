@@ -12,7 +12,13 @@ from light_agent.providers.base import LLMProvider
 
 
 class AgentLoop:
-    def __init__(self, provider: LLMProvider, memory: MemoryStore, tools: ToolRegistry, long_memory: Optional[LongMemoryTool] = None):
+    def __init__(
+        self,
+        provider: LLMProvider,
+        memory: MemoryStore,
+        tools: ToolRegistry,
+        long_memory: Optional[LongMemoryTool] = None,
+    ):
         self.provider = provider
         self.memory = memory
         self.tools = tools
@@ -41,10 +47,11 @@ class AgentLoop:
             logger.debug(f"Iteration {i + 1}")
 
             tool_schemas = await self.tools.get_all_tool_schemas()
+            reasoning_model = settings.REASONING_MODEL or settings.DEFAULT_MODEL
             response = await self.provider.generate(
                 self.messages,
                 tools=tool_schemas if tool_schemas else None,
-                model=settings.REASONING_MODEL,
+                model=reasoning_model,
             )
 
             if response.content:
@@ -68,14 +75,14 @@ class AgentLoop:
 
         # Summarize and log to memory
         summary = await self._summarize(user_input, final_answer)
-        
+
         entry = {
             "conversation_id": self.conversation_id,
             "question": user_input,
             "answer": final_answer,
-            "summary": summary
+            "summary": summary,
         }
-        
+
         # Log standalone memory entry if available
         if self.long_memory:
             await self.long_memory.store(entry)
@@ -86,10 +93,17 @@ class AgentLoop:
         """Generate a short summary of the Q&A."""
         try:
             prompt = [
-                {"role": "system", "content": "You are a helpful assistant that summarizes conversations concisely in Portuguese."},
-                {"role": "user", "content": f"Resuma a seguinte interação entre um usuário e um assistente SRE em uma frase curta:\nPergunta: {question}\nResposta: {answer}"}
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that summarizes conversations concisely in Portuguese.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Resuma a seguinte interação entre um usuário e um assistente SRE em uma frase curta:\nPergunta: {question}\nResposta: {answer}",
+                },
             ]
-            response = await self.provider.generate(prompt, model=settings.FAST_MODEL)
+            fast_model = settings.FAST_MODEL or settings.DEFAULT_MODEL
+            response = await self.provider.generate(prompt, model=fast_model)
             return response.content.strip() if response.content else ""
         except Exception as e:
             logger.warning(f"Failed to generate summary: {e}")
@@ -98,12 +112,12 @@ class AgentLoop:
     def _get_system_prompt(self) -> str:
         # Get long-term facts (MEMORY.md)
         memory_context = self.memory.read_long_term()
-        
+
         # Get recent interaction history from SQLite
         recent_history = ""
         if self.long_memory:
             recent_history = self.long_memory.get_recent_context(limit=5)
-            
+
         skills_summary = "No detailed skills loaded."
         if self.tools.skills_loader:
             skills_summary = self.tools.skills_loader.get_skills_summary()

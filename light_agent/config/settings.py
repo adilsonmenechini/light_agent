@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # Workspace
     WORKSPACE_DIR: Path = Path("./workspace")
+    RESTRICT_TO_WORKSPACE: bool = True
 
     # LLM Configuration
     OLLAMA_BASE_URL: str = "http://localhost:11434"

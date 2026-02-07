@@ -1,6 +1,7 @@
-"""Web tools: web_search and web_fetch."""
+"""Web tools: web_search and web_fetch with security hardening."""
 
 import html
+import ipaddress
 import json
 import os
 import re
@@ -13,7 +14,31 @@ from light_agent.agent.tools.base import Tool
 
 # Shared constants
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_2) AppleWebKit/537.36"
-MAX_REDIRECTS = 5  # Limit redirects to prevent DoS attacks
+MAX_REDIRECTS = 5
+
+# Private IP ranges to block (RFC 1918 + loopback + link-local)
+PRIVATE_IP_RANGES = [
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("169.254.0.0/16"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+    ipaddress.ip_network("fe80::/10"),
+]
+
+# Hostnames that provide cloud metadata services
+BLOCKED_HOSTNAMES = {
+    "localhost",
+    "127.0.0.1",
+    "::1",
+    "169.254.169.254",
+    "metadata.google.internal",
+    "metadata.azure.com",
+    "metadata.aws.internal",
+    "kubernetes.default.svc",
+}
 
 
 def _strip_tags(text: str) -> str:
@@ -30,14 +55,42 @@ def _normalize(text: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
+def _is_private_ip(ip: str) -> bool:
+    """Check if IP address is in a private range."""
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+        for network in PRIVATE_IP_RANGES:
+            if ip_obj in network:
+                return True
+        return False
+    except ValueError:
+        return False
+
+
 def _validate_url(url: str) -> tuple[bool, str]:
-    """Validate URL: must be http(s) with valid domain."""
+    """Validate URL with SSRF protection."""
     try:
         p = urlparse(url)
+
         if p.scheme not in ("http", "https"):
             return False, f"Only http/https allowed, got '{p.scheme or 'none'}'"
-        if not p.netloc:
+
+        hostname = p.hostname.lower() if p.hostname else ""
+        if not hostname:
             return False, "Missing domain"
+
+        if hostname in BLOCKED_HOSTNAMES:
+            return False, f"Blocked hostname: {hostname}"
+
+        import socket
+
+        try:
+            ip = socket.gethostbyname(hostname)
+            if _is_private_ip(ip):
+                return False, f"Private IP blocked: {ip}"
+        except socket.gaierror:
+            return False, f"Could not resolve hostname: {hostname}"
+
         return True, ""
     except Exception as e:
         return False, str(e)

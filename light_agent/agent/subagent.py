@@ -13,9 +13,9 @@ from light_agent.agent.tools.filesystem import ListDirTool, ReadFileTool, WriteF
 from light_agent.agent.tools.registry import ToolRegistry
 from light_agent.agent.tools.shell import ExecTool
 from light_agent.agent.tools.web import WebFetchTool, WebSearchTool
+from light_agent.config.settings import settings
 from light_agent.providers.base import LLMProvider
 from light_agent.session.manager import SessionManager
-
 
 
 @dataclass
@@ -41,8 +41,6 @@ class SubagentManager:
         model: str | None = None,
         exec_config: "ExecToolConfig | None" = None,
     ):
-
-
         self.provider = provider
         self.workspace = workspace
         self.session_manager = session_manager
@@ -81,7 +79,9 @@ class SubagentManager:
 
         # Create background task
         model_to_use = model or self.model
-        bg_task = asyncio.create_task(self._run_subagent(task_id, task, display_label, origin, model_to_use))
+        bg_task = asyncio.create_task(
+            self._run_subagent(task_id, task, display_label, origin, model_to_use)
+        )
         self._running_tasks[task_id] = bg_task
 
         # Cleanup when done (but results are kept in self._results)
@@ -148,19 +148,21 @@ class SubagentManager:
                     model=model,
                 )
 
-                if response.has_tool_calls:
+                if response.has_tool_calls and response.tool_calls:
                     # Add assistant message with tool calls
                     tool_call_dicts = []
                     for tc in response.tool_calls:
-                        tool_call_dicts.append({
-                            "id": tc.id,
-                            "type": "function",
-                            "function": {
-                                "name": tc.function.name,
-                                "arguments": tc.function.arguments,
-                            },
-                        })
-                    
+                        tool_call_dicts.append(
+                            {
+                                "id": tc.id,
+                                "type": "function",
+                                "function": {
+                                    "name": tc.function.name,
+                                    "arguments": tc.function.arguments,
+                                },
+                            }
+                        )
+
                     messages.append(
                         {
                             "role": "assistant",
@@ -170,21 +172,22 @@ class SubagentManager:
                     )
 
                     # Execute tools
-                    for tool_call in response.tool_calls:
-                        args = json.loads(tool_call.function.arguments)
-                        name = tool_call.function.name
-                        logger.debug(
-                            f"Subagent [{task_id}] executing: {name} with arguments: {args}"
-                        )
-                        result = await tools.execute(name, args)
-                        messages.append(
-                            {
-                                "role": "tool",
-                                "tool_call_id": tool_call.id,
-                                "name": name,
-                                "content": result,
-                            }
-                        )
+                    if response.tool_calls:
+                        for tool_call in response.tool_calls:
+                            args = json.loads(tool_call.function.arguments)
+                            name = tool_call.function.name
+                            logger.debug(
+                                f"Subagent [{task_id}] executing: {name} with arguments: {args}"
+                            )
+                            result = await tools.execute(name, args)
+                            messages.append(
+                                {
+                                    "role": "tool",
+                                    "tool_call_id": tool_call.id,
+                                    "name": name,
+                                    "content": result,
+                                }
+                            )
                 else:
                     final_result = response.content
                     break
@@ -261,11 +264,9 @@ Result:
             if tid in self._results:
                 results.append(self._results[tid])
             else:
-                results.append({
-                    "task_id": tid,
-                    "status": "unknown",
-                    "result": "Result not found after wait."
-                })
+                results.append(
+                    {"task_id": tid, "status": "unknown", "result": "Result not found after wait."}
+                )
 
         summary = f"Waited for {len(ids_to_wait)} subagent(s)."
         return {"results": results, "summary": summary}

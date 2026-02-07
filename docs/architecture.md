@@ -45,6 +45,34 @@ The system also orchestrates multiple models for efficiency:
     - At the end of the run, the agent generates a concise summary of the interaction.
     - The question, answer, and summary are stored in the SQLite database (`long_memory.db`).
 
+## Security Hardening
+
+Light Agent includes multiple security layers to prevent malicious use:
+
+### Shell Command Safety
+- **Command Allowlist**: Only 60+ pre-approved commands can be executed (git, ls, cat, grep, docker, etc.)
+- **Shell Metacharacter Detection**: Blocks dangerous characters (`;|&$<>`{}[]\\*?\n\r)
+- **Dangerous Pattern Blocking**: Prevents destructive commands like `rm -rf`, fork bombs, disk writes
+- **Subprocess Isolation**: Uses `create_subprocess_exec()` instead of `shell=True`
+
+### SSRF Protection (Web Tools)
+- **Private IP Blocking**: Blocks RFC 1918 addresses (10.x, 172.16.x, 192.168.x)
+- **Loopback/Link-local Blocking**: Blocks 127.x, 169.254.x, ::1
+- **Cloud Metadata Protection**: Blocks AWS/GCP/Azure metadata endpoints
+
+### Workspace Restriction
+- **RESTRICT_TO_WORKSPACE**: When enabled (default), all file operations are confined to the workspace directory
+- **Path Traversal Prevention**: Detects and blocks `../` attacks
+
+## Configuration
+
+Security settings can be configured via `.env`:
+
+```env
+# Security
+RESTRICT_TO_WORKSPACE=true  # Default: true
+```
+
 ## Technology Stack
 - **Manager**: `uv`.
 - **LLM Interface**: `litellm`.
