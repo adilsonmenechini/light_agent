@@ -7,9 +7,17 @@ Stored in `workspace/skills/`. The agent discovers these automatically but can b
 
 ## Built-in Tools
 Standard tools provided by the core engine:
-- `shell_command`: Execute authorized shell commands.
-- `fetch_content`: Basic HTTP GET wrapper.
-- `memory_search`: Semantic or keyword search in `workspace/memory/`.
+- `exec`: Execute authorized shell commands.
+- `list_dir`: List directory contents.
+- `read_file` / `write_file`: File operations.
+- `web_search`: Search via DuckDuckGo.
+- `web_fetch`: Fetch and parse web content.
+- `long_memory.search`: Semantic search in past interactions.
+
+## Subagent Tools
+- `spawn`: Launch a single subagent for a background task.
+- `parallel_spawn`: Launch multiple subagents concurrently.
+- `wait_subagents`: Coordinate and wait for results from background subagents.
 
 ## MCP Servers (External)
 You can connect to external MCP servers by defining them in `workspace/servers_config.json`.

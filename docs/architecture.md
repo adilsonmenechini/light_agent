@@ -10,31 +10,40 @@ graph TD
     AL --> Provider[LiteLLMProvider]
     AL --> ToolReg[ToolRegistry]
     AL --> Memory[MemoryStore]
+    AL --> LongMemory[LongMemoryTool (SQLite)]
+    AL --> Subagent[SubagentManager]
     
     ToolReg --> Skills[SkillsLoader]
     ToolReg --> MCP[MCP Clients]
     
     AL --> Session[SessionManager]
     
-    Memory --> JSON[workspace/memory/*.json]
+    Memory --> Markdown[workspace/memory/MEMORY.md]
+    LongMemory --> DB[data/memory/long_memory.db]
     Session --> JSONL[~/.light_agent/sessions/*.jsonl]
     
     Provider --> LLM[External LLM Providers]
 ```
 
-## Multi-Agent Logic
-The system supports multiple agents defined as Markdown personas. A supervisor or a coordinator can orchestrate tasks between these agents using a simple event-driven loop.
+## Multi-Agent & Multi-Model Orchestration
+The system supports spawning background subagents. These are isolated agent instances that share the same provider but have a focused system prompt and localized tools. 
+
+Concurrent execution is supported via `SubagentManager`, allowing the main agent to delegate multiple tasks in parallel and coordinate their results.
+
+The system also orchestrates multiple models for efficiency:
+- **Reasoning Loop**: Uses the `REASONING_MODEL` for complex planning and tool use.
+- **Utility Tasks**: Uses the `FAST_MODEL` for lighter tasks such as interaction summarization, ensuring low latency and reduced cost/resource usage.
 
 ## Core Flow
 1. **Input**: User command via CLI.
-2. **Context Assembly**: The system loads the active agent persona, recent memories (JSON), and available skills summary.
+2. **Context Assembly**: The system loads fixed facts (`MEMORY.md`), recent interaction history (SQLite), and available skills.
 3. **Execution Loop**:
     - The LLM receives the context and decides which skill/tool to call.
     - The `SkillLoader` or native tools execute the task.
     - Results are appended to the context.
 4. **Memory Update**: 
     - At the end of the run, the agent generates a concise summary of the interaction.
-    - The question, answer, and summary are saved as a structured entry in today's JSON log in `workspace/memory/`.
+    - The question, answer, and summary are stored in the SQLite database (`long_memory.db`).
 
 ## Technology Stack
 - **Manager**: `uv`.

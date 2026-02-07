@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # Workspace
     WORKSPACE_DIR: Path = Path("./workspace")
+    RESTRICT_TO_WORKSPACE: bool = True
 
     # LLM Configuration
     OLLAMA_BASE_URL: str = "http://localhost:11434"
@@ -15,6 +16,8 @@ class Settings(BaseSettings):
     LLMSTUDY_BASE_URL: Optional[str] = None
 
     DEFAULT_MODEL: str = "ollama/llama3"
+    FAST_MODEL: Optional[str] = None
+    REASONING_MODEL: Optional[str] = None
 
     # Tool Configuration
     ENABLED_TOOLS: str = "shell_command,fetch_content"
