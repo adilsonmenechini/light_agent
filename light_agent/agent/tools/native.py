@@ -8,7 +8,7 @@ from light_agent.agent.tools.base import Tool
 class NativeTool(Tool):
     """
     Wrapper for native Python functions to be used as tools.
-    
+
     Allows registering arbitrary Python functions as agent tools.
     """
 
@@ -21,7 +21,7 @@ class NativeTool(Tool):
     ):
         """
         Initialize a native tool.
-        
+
         Args:
             name: Tool name.
             func: Python function to execute.
@@ -47,7 +47,6 @@ class NativeTool(Tool):
 
     async def execute(self, **kwargs: Any) -> str:
         """Execute the wrapped function."""
-        import asyncio
         import inspect
 
         # Handle both sync and async functions
@@ -55,5 +54,5 @@ class NativeTool(Tool):
             result = await self._func(**kwargs)
         else:
             result = self._func(**kwargs)
-            
+
         return str(result)

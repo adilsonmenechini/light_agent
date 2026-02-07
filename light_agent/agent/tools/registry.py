@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from light_agent.agent.skills import SkillsLoader
 from light_agent.agent.tools.base import Tool
 
 
@@ -15,7 +16,7 @@ class ToolRegistry:
     def __init__(self):
         self._tools: dict[str, Tool] = {}
         self.mcp_clients = []
-        self.skills_loader = None
+        self.skills_loader: SkillsLoader | None = None
 
     def register(self, tool: Tool) -> None:
         """Register a tool."""
@@ -77,26 +78,28 @@ class ToolRegistry:
     async def get_all_tool_schemas(self) -> list[dict[str, Any]]:
         """Get all tool schemas from both native tools and MCP clients."""
         schemas = self.get_definitions()
-        
+
         # Add MCP tools
         for mcp_client in self.mcp_clients:
             mcp_tools = await mcp_client.get_tools()
             for tool in mcp_tools:
-                schemas.append({
-                    "type": "function",
-                    "function": {
-                        "name": tool["name"],
-                        "description": tool.get("description", ""),
-                        "parameters": tool.get("input_schema", {}),
-                    },
-                })
-        
+                schemas.append(
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": tool["name"],
+                            "description": tool.get("description", ""),
+                            "parameters": tool.get("input_schema", {}),
+                        },
+                    }
+                )
+
         return schemas
 
     async def call_tool(self, name: str, arguments: dict[str, Any]) -> str:
         """
         Call a tool by name with given arguments.
-        
+
         Handles both native tools and MCP tools.
         """
         # Check if it's an MCP tool (format: mcp_name__tool_name)
@@ -104,7 +107,6 @@ class ToolRegistry:
             for mcp_client in self.mcp_clients:
                 if name.startswith(f"{mcp_client.name}__"):
                     return await mcp_client.call_tool(name, arguments)
-        
+
         # Otherwise, execute as native tool
         return await self.execute(name, arguments)
-

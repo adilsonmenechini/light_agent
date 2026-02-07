@@ -2,8 +2,6 @@
 
 from typing import Any, Awaitable, Callable
 
-from light_agent.bus.events import OutboundMessage
-
 from light_agent.agent.tools.base import Tool
 
 
@@ -12,7 +10,7 @@ class MessageTool(Tool):
 
     def __init__(
         self,
-        send_callback: Callable[[OutboundMessage], Awaitable[None]] | None = None,
+        send_callback: Callable[[Any], Awaitable[None]] | None = None,
         default_channel: str = "",
         default_chat_id: str = "",
     ):
@@ -25,7 +23,7 @@ class MessageTool(Tool):
         self._default_channel = channel
         self._default_chat_id = chat_id
 
-    def set_send_callback(self, callback: Callable[[OutboundMessage], Awaitable[None]]) -> None:
+    def set_send_callback(self, callback: Callable[[Any], Awaitable[None]]) -> None:
         """Set the callback for sending messages."""
         self._send_callback = callback
 
@@ -52,11 +50,10 @@ class MessageTool(Tool):
             "required": ["content"],
         }
 
-    async def execute(
-        self, content: str, channel: str | None = None, chat_id: str | None = None, **kwargs: Any
-    ) -> str:
-        channel = channel or self._default_channel
-        chat_id = chat_id or self._default_chat_id
+    async def execute(self, **kwargs: Any) -> str:
+        content = kwargs.get("content", "")
+        channel = kwargs.get("channel") or self._default_channel
+        chat_id = kwargs.get("chat_id") or self._default_chat_id
 
         if not channel or not chat_id:
             return "Error: No target channel/chat specified"
@@ -64,7 +61,7 @@ class MessageTool(Tool):
         if not self._send_callback:
             return "Error: Message sending not configured"
 
-        msg = OutboundMessage(channel=channel, chat_id=chat_id, content=content)
+        msg = {"channel": channel, "chat_id": chat_id, "content": content}
 
         try:
             await self._send_callback(msg)

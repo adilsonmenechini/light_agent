@@ -11,11 +11,12 @@ def suppress_output():
     # Save original file descriptors
     stdout_fd = sys.stdout.fileno()
     stderr_fd = sys.stderr.fileno()
-    
+
     # Save copies of original stdout/stderr
-    with os.fdopen(os.dup(stdout_fd), 'w') as stdout_copy, \
-         os.fdopen(os.dup(stderr_fd), 'w') as stderr_copy:
-        
+    with (
+        os.fdopen(os.dup(stdout_fd), "w") as stdout_copy,
+        os.fdopen(os.dup(stderr_fd), "w") as stderr_copy,
+    ):
         # Redirect to devnull
         devnull = os.open(os.devnull, os.O_WRONLY)
         try:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import litellm
 
@@ -28,7 +28,9 @@ class LiteLLMProvider(LLMProvider):
             base_url=self.base_url,
         )
 
-        choice = response.choices[0]
+        # Cast to handle LiteLLM's complex type hierarchy
+        response_cast = cast(Any, response)
+        choice = response_cast.choices[0]
         content = choice.message.content
         tool_calls = getattr(choice.message, "tool_calls", None)
 

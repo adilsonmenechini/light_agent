@@ -64,7 +64,8 @@ class ReadFileTool(FileToolBase):
             "required": ["path"],
         }
 
-    async def execute(self, path: str, **kwargs: Any) -> str:
+    async def execute(self, **kwargs: Any) -> str:
+        path = kwargs.get("path", "")
         try:
             file_path = self._get_safe_path(path)
             if not file_path.exists():
@@ -102,7 +103,9 @@ class WriteFileTool(FileToolBase):
             "required": ["path", "content"],
         }
 
-    async def execute(self, path: str, content: str, **kwargs: Any) -> str:
+    async def execute(self, **kwargs: Any) -> str:
+        path = kwargs.get("path", "")
+        content = kwargs.get("content", "")
         try:
             file_path = self._get_safe_path(path)
             file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -137,7 +140,10 @@ class EditFileTool(FileToolBase):
             "required": ["path", "old_text", "new_text"],
         }
 
-    async def execute(self, path: str, old_text: str, new_text: str, **kwargs: Any) -> str:
+    async def execute(self, **kwargs: Any) -> str:
+        path = kwargs.get("path", "")
+        old_text = kwargs.get("old_text", "")
+        new_text = kwargs.get("new_text", "")
         try:
             file_path = self._get_safe_path(path)
             if not file_path.exists():
@@ -182,7 +188,8 @@ class ListDirTool(FileToolBase):
             "required": ["path"],
         }
 
-    async def execute(self, path: str, **kwargs: Any) -> str:
+    async def execute(self, **kwargs: Any) -> str:
+        path = kwargs.get("path", "")
         try:
             dir_path = self._get_safe_path(path)
             if not dir_path.exists():

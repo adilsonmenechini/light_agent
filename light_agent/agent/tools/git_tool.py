@@ -1,7 +1,6 @@
 """Git operations tool with safety validation."""
 
 import asyncio
-import subprocess
 from pathlib import Path
 from typing import Any, Optional
 
@@ -87,7 +86,7 @@ class GitTool(Tool):
         args: list[str],
         working_dir: Optional[str] = None,
         capture_output: bool = True,
-    ) -> tuple[int, str, str]:
+    ) -> tuple[int | None, str, str]:
         """Execute a git command safely."""
         cwd = working_dir or str(Path.cwd())
 
@@ -167,7 +166,7 @@ class GitTool(Tool):
                     return f"Error: Cannot delete protected branch '{branch}'"
                 # Require --force for non-empty deletes
                 if not kwargs.get("force"):
-                    return f"Error: Deleting branch requires --force flag"
+                    return "Error: Deleting branch requires --force flag"
 
             if action == "branch_create":
                 is_valid, error = await self._validate_branch_name(branch)
@@ -270,7 +269,7 @@ class GitTool(Tool):
             returncode, stdout, stderr = await self._run_git(args, working_dir)
             if returncode != 0:
                 return f"Error: {stderr}"
-            return f"✓ Pulled latest changes"
+            return "✓ Pulled latest changes"
 
         elif action == "merge_check":
             # Check if branch can be merged cleanly
