@@ -13,6 +13,9 @@ from light_agent.agent.subagent import SubagentManager
 from light_agent.session.manager import SessionManager
 from light_agent.agent.tools import (
     ExecTool,
+    GitHubTool,
+    GitHubWorkflowTool,
+    GitTool,
     ListDirTool,
     ParallelSpawnTool,
     ReadFileTool,
@@ -120,6 +123,9 @@ async def setup_agent(verbose: bool = False):
     )
     tools.register(WebSearchTool())
     tools.register(WebFetchTool())
+    tools.register(GitTool())
+    tools.register(GitHubTool())
+    tools.register(GitHubWorkflowTool())
     tools.register(SpawnTool(manager=subagent_manager))
     tools.register(ParallelSpawnTool(manager=subagent_manager))
     tools.register(WaitSubagentsTool(manager=subagent_manager))
