@@ -114,8 +114,12 @@ tmux -S "$SOCKET" capture-pane -p -t agent-1 -S -500
 {baseDir}/scripts/wait-for-text.sh -t session:0.0 -p 'pattern' [-F] [-T 20] [-i 0.5] [-l 2000]
 ```
 
-- `-t`/`--target` pane target (required)
-- `-p`/`--pattern` regex to match (required); add `-F` for fixed string
-- `-T` timeout seconds (integer, default 15)
-- `-i` poll interval seconds (default 0.5)
-- `-l` history lines to search (integer, default 1000)
+### Parameters
+
+| Flag | Description |
+|------|-------------|
+| `-t` / `--target` | Pane target (required) |
+| `-p` / `--pattern` | Regex to match (required); add `-F` for fixed string |
+| `-T` | Timeout in seconds (default: 15) |
+| `-i` | Poll interval in seconds (default: 0.5) |
+| `-l` | History lines to search (default: 1000) |

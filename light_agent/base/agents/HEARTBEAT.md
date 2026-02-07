@@ -1,16 +1,35 @@
-# heartbeat Tasks
+# Heartbeat Tasks
 
 This file is checked every 30 minutes by your lightagent agent.
-Add tasks below that you want the agent to work on periodically.
-
-If this file has no tasks (only headers and comments), the agent will skip the heartbeat.
+Use it for recurring tasks that need periodic attention.
 
 ## Active Tasks
 
-<!-- Add your periodic tasks below this line -->
-
+<!-- Adicione suas tarefas periódicas abaixo -->
 
 ## Completed
 
-<!-- Move completed tasks here or delete them -->
+<!-- Mova tarefas concluídas para cá ou delete-as -->
+
+## Exemplos de Tarefas
+
+### Monitoramento
+- [ ] Check system health: `uptime`, `df -h`
+- [ ] Verificar serviços críticos: `systemctl --type=service --state=running`
+
+### Revisão Diária
+- [ ] Review application logs for errors
+- [ ] Check disk usage: `df -h && du -sh /var/*`
+
+### Lembretes
+- [ ] Backup database (daily at 2AM)
+- [ ] Review pending PRs
+
+## Como Gerenciar
+
+- **Adicionar**: Use `edit_file` para append novas tarefas
+- **Remover**: Use `edit_file` para remover tarefas concluídas
+- **Reescrever**: Use `write_file` para reescrever toda a lista
+
+Mantenha o arquivo pequeno para minimizar uso de tokens.
 

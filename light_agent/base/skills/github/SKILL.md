@@ -333,3 +333,61 @@ gh api repos/owner/repo/git/refs \
 - Use `--paginate` for large result sets
 - Use `--yes` to skip confirmations
 - Combine filters for powerful queries: `gh pr list --state open --label "bug" --limit 50`
+
+## Common Workflows
+
+### PR Review Workflow
+```bash
+# 1. List PRs needing review
+gh pr list --state open --review-requested=@me
+
+# 2. Checkout and review locally
+gh pr checkout 55
+gh pr diff 55 > pr_diff.txt
+gh pr view 55 --comments
+
+# 3. Run CI checks
+gh pr checks 55
+
+# 4. Submit review
+gh pr review 55 --approve --body "LGTM!"
+```
+
+### Bug Report to Fix Workflow
+```bash
+# 1. Create issue from bug report
+gh issue create --title "[Bug] Description" --body @bug_report.md --label bug
+
+# 2. Create fix branch
+gh api repos/owner/repo/git/refs -X POST -f ref="refs/heads/fix/issue-123" -f sha=$(gh api repos/owner/repo/commits/main --jq '.sha')
+
+# 3. Create draft PR when ready
+gh pr create --title "Fix: Issue #123" --body "Closes #123" --head fix/issue-123 --draft
+```
+
+### Release Workflow
+```bash
+# 1. Check version and commits
+gh release view latest
+gh api repos/owner/repo/commits/main --jq '.[:10] | .[] | "\(.sha[:7]) \(.commit.message | split("\n")[0])"'
+
+# 2. Create release
+gh release create v1.2.0 --notes "## Changes\n- Feature A\n- Fix B" --title "Version 1.2.0"
+
+# 3. Verify release assets
+gh release view v1.2.0 --json assets
+```
+
+### Sync Fork Workflow
+```bash
+# 1. Add upstream remote
+gh repo fork owner/repo --clone=false
+git remote add upstream https://github.com/owner/repo.git
+
+# 2. Sync with upstream
+git fetch upstream
+gh repo sync --base owner/repo
+
+# 3. Push to your fork
+git push origin main
+```
