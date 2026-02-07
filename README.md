@@ -70,6 +70,9 @@ Connect to external Model Context Protocol servers (e.g., Google Drive, Slack) b
 | **Interactive Chat Mode** | CLI | ✅ Done | Persistent chat session launched via `uv run lightagent chat`. |
 | **Slash Commands** | CLI | ✅ Done | Support for commands like `/new`, `/reset`, and `/status` within the chat. |
 | **Security Hardening** | Security | ✅ Done | Shell command allowlist, SSRF protection, workspace restriction. |
+| **Human Approval Tool** | 12-Factor | ✅ Done | Pause execution for human approval before high-stakes operations. |
+| **Control Flow Hooks** | 12-Factor | ✅ Done | Intercept agent execution at strategic points (before/after tool, LLM calls). |
+| **Reducer Pattern** | 12-Factor | ✅ Done | Immutable state transitions for predictable, testable agent behavior. |
 
 ## Security Features
 
