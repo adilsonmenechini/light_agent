@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 
 from light_agent.agent.memory import MemoryStore
+from light_agent.agent.short_memory import ShortTermMemory
 from light_agent.agent.tools import ToolRegistry
 from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.config.settings import settings
@@ -64,11 +65,13 @@ class AgentLoop:
         memory: MemoryStore,
         tools: ToolRegistry,
         long_memory: Optional[LongMemoryTool] = None,
+        short_memory: Optional[ShortTermMemory] = None,
     ):
         self.provider = provider
         self.memory = memory
         self.tools = tools
         self.long_memory = long_memory
+        self.short_memory = short_memory or ShortTermMemory()
         self.messages: List[Dict[str, str]] = []
         self.conversation_id = self._generate_id()
 
@@ -79,6 +82,8 @@ class AgentLoop:
         """Clear conversation history and start a new conversation ID."""
         self.messages = []
         self.conversation_id = self._generate_id()
+        if self.short_memory:
+            self.short_memory.clear_all()
 
     async def run(self, user_input: str):
         # Initial context
@@ -86,6 +91,10 @@ class AgentLoop:
             self.messages.append({"role": "system", "content": self._get_system_prompt()})
 
         self.messages.append({"role": "user", "content": user_input})
+
+        # Sync with short-term memory
+        if self.short_memory:
+            self.short_memory.add_message("user", user_input)
 
         final_answer = ""
         max_iterations = 10
@@ -107,6 +116,10 @@ class AgentLoop:
                 logger.info(f"Agent: {response.content}")
                 self.messages.append({"role": "assistant", "content": response.content})
                 final_answer = response.content
+
+                # Sync assistant message to short-term memory
+                if self.short_memory:
+                    self.short_memory.add_message("assistant", response.content)
 
             if not response.tool_calls:
                 break
@@ -184,6 +197,13 @@ class AgentLoop:
         if self.long_memory:
             recent_history = self.long_memory.get_recent_context(limit=5)
 
+        # Get short-term memory context (current session)
+        session_context = ""
+        observations_context = ""
+        if self.short_memory:
+            session_context = self.short_memory.get_message_window()
+            observations_context = self.short_memory.get_observations_summary()
+
         skills_summary = "No detailed skills loaded."
         if self.tools.skills_loader:
             skills_summary = self.tools.skills_loader.get_skills_summary()
@@ -194,6 +214,10 @@ class AgentLoop:
 {memory_context or "No fixed facts available."}
 
 {recent_history}
+
+{session_context}
+
+{observations_context}
 
 # Available Skills
 {skills_summary}

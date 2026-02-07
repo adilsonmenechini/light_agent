@@ -11,19 +11,21 @@ graph TD
     AL --> ToolReg[ToolRegistry]
     AL --> Memory[MemoryStore]
     AL --> LongMemory[LongMemoryTool (SQLite)]
+    AL --> ShortMemory[ShortTermMemory]
     AL --> Subagent[SubagentManager]
-    
+
     ToolReg --> Skills[SkillsLoader]
     ToolReg --> MCP[MCP Clients]
-    
+
     AL --> Session[SessionManager]
     AL -.-> |auto-capture insights| LongMemory
-    
+
     Memory --> Markdown[workspace/memory/MEMORY.md]
     LongMemory --> DB[data/memory/long_memory.db]
     LongMemory --> |qa + observations| DB
+    ShortMemory --> |messages + tasks + obs| InMem[In-Memory]
     Session --> JSONL[~/.light_agent/sessions/*.jsonl]
-    
+
     Provider --> LLM[External LLM Providers]
 ```
 
@@ -49,6 +51,15 @@ The system also orchestrates multiple models for efficiency:
     - All data is stored in the SQLite database (`long_memory.db`) with type标记 (`qa` or `observation`).
 
 ## Memory System
+
+### Short-term Memory (In-Memory)
+- **Purpose**: Fast, session-scoped context for immediate interactions
+- **Components**:
+  - **Message Window**: Last 10 messages (sliding window)
+  - **Task States**: Intermediate state for complex multi-step tasks
+  - **Observations**: Temporary tool insights (max 20)
+- **Latency**: ~0ms (in-memory data structure)
+- **Lifecycle**: Cleared on `/new` command or session end
 
 ### Long-term Memory (SQLite)
 - Stores all interactions and tool observations in `data/memory/long_memory.db`
