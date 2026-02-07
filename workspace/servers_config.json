@@ -13,6 +13,14 @@
                 "-y",
                 "@modelcontextprotocol/server-memory"
             ]
+        },
+        "github": {
+            "command": "uvx",
+            "args": [
+                "mcp-server-github",
+                "--github-token",
+                "${GITHUB_TOKEN}"
+            ]
         }
     }
 }

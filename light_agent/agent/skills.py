@@ -8,7 +8,11 @@ from loguru import logger
 
 class SkillsLoader:
     def __init__(self, workspace_dir: Path):
-        self.skills_dir = workspace_dir / "skills"
+        # Use BASE_DIR first, fallback to workspace for backwards compatibility
+        from light_agent.config.settings import settings
+
+        base_dir = settings.effective_base_dir
+        self.skills_dir = base_dir / "skills"
         self.skills_dir.mkdir(parents=True, exist_ok=True)
 
     def list_skills(self) -> List[Dict[str, Any]]:

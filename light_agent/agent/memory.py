@@ -6,7 +6,11 @@ from typing import Any, Dict, List
 
 class MemoryStore:
     def __init__(self, workspace_dir: Path):
-        self.memory_dir = workspace_dir / "memory"
+        # Use BASE_DIR first, fallback to workspace for backwards compatibility
+        from light_agent.config.settings import settings
+
+        base_dir = settings.effective_base_dir
+        self.memory_dir = base_dir / "memory"
         self.memory_dir.mkdir(parents=True, exist_ok=True)
         self.memory_file = self.memory_dir / "MEMORY.md"
 
