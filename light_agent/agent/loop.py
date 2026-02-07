@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 
@@ -9,6 +9,51 @@ from light_agent.agent.tools import ToolRegistry
 from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.config.settings import settings
 from light_agent.providers.base import LLMProvider
+
+
+def _extract_insight_from_tool_result(
+    tool_name: str, tool_args: Dict[str, Any], tool_result: str
+) -> Optional[str]:
+    """
+    Extract a meaningful insight from a tool result.
+    Returns None if the result is not worth saving as an observation.
+    """
+    result = tool_result.strip()
+
+    # Skip empty or error results
+    if not result or result.lower().startswith(("error:", "failed", "exception")):
+        return None
+
+    # Skip very short results that don't contain meaningful information
+    if len(result) < 20:
+        return None
+
+    # Truncate very long results
+    if len(result) > 2000:
+        result = result[:2000] + "... [truncated]"
+
+    # Generate insight based on tool type
+    insights = {
+        "read_file": f"Lido arquivo: descobriu que {result[:300]}..."
+        if len(result) > 300
+        else f"Lido arquivo: {result}",
+        "write_file": f"Criou/editou arquivo com conteúdo: {result[:300]}..."
+        if len(result) > 300
+        else f"Criou/editou arquivo: {result}",
+        "list_dir": f"Listou diretório: encontrou {result.count(chr(10)) + 1} itens",
+        "exec": f"Executou comando que retornou: {result[:300]}..."
+        if len(result) > 300
+        else f"Executou comando: {result}",
+        "grep": f"Busca encontrou {result.count(chr(10)) + 1} resultados",
+        "glob": f"Encontrou {result.count(chr(10)) + 1} arquivos correspondendo ao padrão",
+        "edit": f"Editou arquivo: {result}",
+        "web_search": f"Pesquisa web retornou {result.count(chr(10)) + 1} resultados",
+        "web_fetch": f"Conteúdo web extraído: {result[:300]}..."
+        if len(result) > 300
+        else f"Conteúdo web: {result}",
+    }
+
+    return insights.get(tool_name, f"Tool {tool_name} executou: {result[:300]}...")
 
 
 class AgentLoop:
@@ -72,6 +117,21 @@ class AgentLoop:
                 self.messages.append(
                     {"role": "tool", "tool_call_id": tool_call.id, "name": name, "content": result}
                 )
+
+                # Auto-capture tool observations if long_memory is available
+                if self.long_memory:
+                    insight = _extract_insight_from_tool_result(name, args, result)
+                    if insight:
+                        try:
+                            await self.long_memory.store_observation(
+                                conversation_id=self.conversation_id,
+                                tool_name=name,
+                                tool_input=args,
+                                tool_output=result,
+                                insight=insight,
+                            )
+                        except Exception as e:
+                            logger.warning(f"Failed to store tool observation: {e}")
 
         # Summarize and log to memory
         summary = await self._summarize(user_input, final_answer)
