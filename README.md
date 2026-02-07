@@ -64,4 +64,27 @@ Connect to external Model Context Protocol servers (e.g., Google Drive, Slack) b
 | **Multi-Model Orchestration** | LLM | ✅ Done | Use different models for reasoning (main loop) vs. speed (summaries). |
 | **Interactive Chat Mode** | CLI | ✅ Done | Persistent chat session launched via `uv run lightagent chat`. |
 | **Slash Commands** | CLI | ✅ Done | Support for commands like `/new`, `/reset`, and `/status` within the chat. |
+| **Security Hardening** | Security | ✅ Done | Shell command allowlist, SSRF protection, workspace restriction. |
+
+## Security Features
+
+Light Agent includes enterprise-grade security controls:
+
+### Shell Command Safety
+- **Command Allowlist**: Only 60+ pre-approved commands can be executed
+- **Shell Injection Protection**: Blocks metacharacters (`;|&$<>`{}[]\\*?)
+- **Destructive Pattern Blocking**: Prevents `rm -rf`, fork bombs, disk writes
+- **Subprocess Isolation**: Uses `create_subprocess_exec()` instead of shell=True
+
+### SSRF Protection (Web Tools)
+- **Private IP Blocking**: RFC 1918 addresses (10.x, 172.16.x, 192.168.x)
+- **Cloud Metadata Protection**: Blocks AWS/GCP/Azure metadata endpoints
+
+### Workspace Security
+- **RESTRICT_TO_WORKSPACE**: All file operations confined to workspace (default: enabled)
+
+Configure in `.env`:
+```env
+RESTRICT_TO_WORKSPACE=true  # Default: true
+```
 
