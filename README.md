@@ -128,11 +128,29 @@ Light Agent is **actively developed** with regular updates:
 |---------|--------|-------------|
 | MCP Server Templates | In Progress | Pre-configured MCP integrations |
 | Telegram Integration | Planned | Chat-based interface via Telegram bot |
-| Docker Support | Planned | Containerized deployment |
+| Docker Support | ✅ Done | Containerized deployment |
 
----
+## Docker
 
-## Roadmap & Future Issues
+Build and run with Docker:
+
+```bash
+# Build image
+docker build -t light-agent .
+
+# Interactive chat
+docker run -it --rm -v $(pwd)/workspace:/app/workspace light-agent
+
+# Single prompt
+docker run --rm -v $(pwd)/workspace:/app/workspace light-agent "Analyze my codebase"
+```
+
+For persistent memory, mount the data directory:
+```bash
+docker run -it --rm -v $(pwd)/workspace:/app/workspace -v $(pwd)/data:/app/data light-agent
+```
+
+## Security Features
 
 | Feature | Category | Status | Description |
 | :--- | :--- | :--- | :--- |
