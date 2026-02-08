@@ -28,7 +28,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-lightagent = "light_agent.cli.commands:app"
+lightagent = "light_agent.cli.application:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["light_agent"]

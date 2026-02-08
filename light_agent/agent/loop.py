@@ -58,6 +58,24 @@ def _extract_insight_from_tool_result(
     return insights.get(tool_name, f"Tool {tool_name} executou: {result[:300]}...")
 
 
+class InsightExtractor:
+    """Encapsulates insight extraction logic for tool results."""
+
+    @staticmethod
+    def extract(tool_name: str, tool_args: Dict[str, Any], tool_result: str) -> Optional[str]:
+        """Extract insight from tool result.
+
+        Args:
+            tool_name: Name of the tool.
+            tool_args: Arguments passed to the tool.
+            tool_result: Result returned by the tool.
+
+        Returns:
+            Optional insight string, or None if not worth saving.
+        """
+        return _extract_insight_from_tool_result(tool_name, tool_args, tool_result)
+
+
 class AgentLoop:
     def __init__(
         self,
