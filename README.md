@@ -150,6 +150,16 @@ For persistent memory, mount the data directory:
 docker run -it --rm -v $(pwd)/workspace:/app/workspace -v $(pwd)/data:/app/data light-agent
 ```
 
+With custom .env file:
+```bash
+docker run -it --rm -v $(pwd)/workspace:/app/workspace -v $(pwd)/.env:/app/.env light-agent
+```
+
+Or with environment variables:
+```bash
+docker run -it --rm -e OPENAI_API_KEY="your-key" -e ANTHROPIC_API_KEY="your-key" light-agent
+```
+
 ## Security Features
 
 | Feature | Category | Status | Description |
