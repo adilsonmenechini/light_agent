@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img src="lightagent.png" alt="Light Agent Logo" width="200"/>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Last Commit](https://img.shields.io/github/last-commit/adilsonmenechini/light-agent/main)](https://github.com/adilsonmenechini/light-agent/commits/main)
@@ -42,6 +44,10 @@ docker run -it --rm -v $(pwd)/workspace:/app/workspace light-agent
 # With env file
 docker run -it --rm -v $(pwd)/.env:/app/.env light-agent
 ```
+
+## Architecture
+
+<img src="lightagent_arch.png" alt="Light Agent Architecture" width="800"/>
 
 ## Documentation
 
