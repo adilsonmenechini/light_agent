@@ -5,6 +5,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Application settings with performance optimizations for M3."""
+
     # Base directory (default) and Workspace (optional override)
     BASE_DIR: Path = Path("./light_agent/base")
     WORKSPACE_DIR: Path = Path("./workspace")
@@ -23,14 +25,20 @@ class Settings(BaseSettings):
     LLMSTUDY_API_KEY: Optional[str] = None
     LLMSTUDY_BASE_URL: Optional[str] = None
 
-    DEFAULT_MODEL: str = "ollama/llama3"
+    DEFAULT_MODEL: str = "ollama/llama3.2:3b"
     FAST_MODEL: Optional[str] = None
-    REASONING_MODEL: Optional[str] = None
+    REASONING_MODEL: Optional[str] = None  # For DeepSeek R1, OpenAI o1/o3, etc.
 
     # Tool Configuration
     ENABLED_TOOLS: str = "shell_command,fetch_content"
     AUTO_APPROVE_SHELL: bool = False
     ENABLE_SUMMARY: bool = True  # Token optimization: disable to skip summary generation
+
+    # Performance Configuration
+    ENABLE_STREAMING: bool = True  # Enable streaming for lower perceived latency
+    SCHEMAS_CACHE_TTL: float = 60.0  # Cache tool schemas for 60 seconds
+    MEMORY_CACHE_TTL: float = 30.0  # Cache memory files for 30 seconds
+    MAX_OUTPUT_TOKENS: int = 512  # Limit output tokens for faster responses
 
     # MCP Configuration
     # Pattern: MCP_SERVER_<NAME>="command"
@@ -49,9 +57,6 @@ class Settings(BaseSettings):
             import json
 
             data = json.loads(config_path.read_text(encoding="utf-8"))
-            # Expecting format: {"mcpServers": {"name": {"command": "...", "args": [...]}}}
-            # Or simpler: {"servers": {"name": "command"}}
-            # Let's support a simple flat dict for now: {"name": "command"}
             return data.get("mcpServers", data)
         except Exception as e:
             from loguru import logger

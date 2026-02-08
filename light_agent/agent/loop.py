@@ -10,7 +10,7 @@ from light_agent.agent.tools import ToolRegistry
 from light_agent.agent.tools.memory_tool import LongMemoryTool
 from light_agent.config.settings import settings
 from light_agent.core import emit_llm_call, emit_thinking, emit_tool_end, emit_tool_start
-from light_agent.providers.base import LLMProvider
+from light_agent.providers.base import LLMProvider, LLMResponse
 
 
 def _extract_insight_from_tool_result(
@@ -148,20 +148,36 @@ class AgentLoop:
 
         final_answer = ""
         max_iterations = 10
+        reasoning_model = settings.REASONING_MODEL or settings.DEFAULT_MODEL
+
         for i in range(max_iterations):
             logger.debug(f"Iteration {i + 1}")
 
             # Use cached tool schemas for token optimization
             tool_schemas = await self._get_cached_tool_schemas()
-            reasoning_model = settings.REASONING_MODEL or settings.DEFAULT_MODEL
 
             emit_llm_call(reasoning_model, len(self.messages))
 
-            response = await self.provider.generate(
-                self.messages,
-                tools=tool_schemas if tool_schemas else None,
-                model=reasoning_model,
-            )
+            # Use streaming for first iteration if enabled and not reasoning model
+            if (
+                i == 0
+                and settings.ENABLE_STREAMING
+                and not self.provider.is_reasoning_model(reasoning_model)
+            ):
+                response_content = ""
+                async for chunk in self.provider.generate_stream(
+                    self.messages,
+                    tools=tool_schemas if tool_schemas else None,
+                    model=reasoning_model,
+                ):
+                    response_content += chunk
+                response = LLMResponse(content=response_content)
+            else:
+                response = await self.provider.generate(
+                    self.messages,
+                    tools=tool_schemas if tool_schemas else None,
+                    model=reasoning_model,
+                )
 
             # Emit thinking event if reasoning content is available (OpenAI o1/o3, DeepSeek R1)
             reasoning = getattr(response, "reasoning_content", None)
