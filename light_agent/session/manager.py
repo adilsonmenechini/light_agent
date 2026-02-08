@@ -1,14 +1,26 @@
-"""Session management for conversation history."""
+"""Session management for conversation history and thread states."""
 
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
 from loguru import logger
 
 from light_agent.utils.helpers import ensure_dir, safe_filename
+
+
+class ThreadStatus(Enum):
+    """Status of an agent thread."""
+
+    PENDING = "pending"
+    RUNNING = "running"
+    WAITING_HUMAN = "waiting_human"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 @dataclass
@@ -203,3 +215,55 @@ class SessionManager:
                 continue
 
         return sorted(sessions, key=lambda x: x.get("updated_at", ""), reverse=True)
+
+    # === Thread State Management (from ThreadStore) ===
+
+    def update_thread_status(self, thread_id: str, status: ThreadStatus) -> bool:
+        """Update the status of a thread.
+
+        Args:
+            thread_id: The ID of the thread to update.
+            status: The new status.
+
+        Returns:
+            True if updated, False if not found.
+        """
+        session = self._load(thread_id)
+        if session is None:
+            return False
+        session.metadata["status"] = status.value
+        self.save(session)
+        return True
+
+    def list_threads(self, status: ThreadStatus | None = None) -> list[dict[str, Any]]:
+        """List all threads, optionally filtered by status.
+
+        Args:
+            status: Optional status to filter by.
+
+        Returns:
+            List of thread info dicts.
+        """
+        threads = []
+        for path in self.sessions_dir.glob("*.jsonl"):
+            try:
+                with open(path) as f:
+                    first_line = f.readline().strip()
+                    if first_line:
+                        data = json.loads(first_line)
+                        if data.get("_type") == "metadata":
+                            thread_status = data.get("metadata", {}).get("status")
+                            if status is None or thread_status == status.value:
+                                threads.append(
+                                    {
+                                        "thread_id": path.stem.replace("_", ":"),
+                                        "status": thread_status,
+                                        "created_at": data.get("created_at"),
+                                        "updated_at": data.get("updated_at"),
+                                        "path": str(path),
+                                    }
+                                )
+            except Exception:
+                continue
+
+        return sorted(threads, key=lambda x: x.get("updated_at", ""), reverse=True)
