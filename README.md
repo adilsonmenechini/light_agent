@@ -47,6 +47,8 @@ docker run -it --rm -v $(pwd)/.env:/app/.env light-agent
 
 ## Architecture
 
+<img src="lightagent_arch.svg" alt="Light Agent Architecture" width="800"/>
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      USER INTERFACE                              │

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" font-family="monospace">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#1a1a2e"/>
+
+  <!-- Title -->
+  <text x="400" y="30" fill="#eee" font-size="18" text-anchor="middle" font-weight="bold">LIGHT AGENT ARCHITECTURE</text>
+
+  <!-- User Interface -->
+  <rect x="300" y="50" width="200" height="50" rx="8" fill="#4a6fa5"/>
+  <text x="400" y="80" fill="#fff" font-size="14" text-anchor="middle">CLI (lightagent chat)</text>
+
+  <!-- Arrow down -->
+  <line x1="400" y1="100" x2="400" y2="120" stroke="#888" stroke-width="2"/>
+  <polygon points="395,115 405,115 400,125" fill="#888"/>
+
+  <!-- Agent Core -->
+  <rect x="200" y="120" width="400" height="120" rx="12" fill="#2d4a3e" stroke="#5cb85c" stroke-width="2"/>
+  <text x="400" y="145" fill="#5cb85c" font-size="12" text-anchor="middle" font-weight="bold">AGENT CORE</text>
+
+  <!-- Agent Loop -->
+  <rect x="220" y="155" width="100" height="70" rx="6" fill="#3d6b5e"/>
+  <text x="270" y="185" fill="#fff" font-size="11" text-anchor="middle">Agent Loop</text>
+  <text x="270" y="200" fill="#aaa" font-size="9" text-anchor="middle">Reasoning</text>
+
+  <!-- Session Manager -->
+  <rect x="340" y="155" width="120" height="70" rx="6" fill="#3d6b5e"/>
+  <text x="400" y="185" fill="#fff" font-size="11" text-anchor="middle">Session Manager</text>
+  <text x="400" y="200" fill="#aaa" font-size="9" text-anchor="middle">History & Context</text>
+
+  <!-- Subagent Manager -->
+  <rect x="480" y="155" width="100" height="70" rx="6" fill="#3d6b5e"/>
+  <text x="530" y="185" fill="#fff" font-size="11" text-anchor="middle">Subagent Mgr</text>
+  <text x="530" y="200" fill="#aaa" font-size="9" text-anchor="middle">Parallel</text>
+
+  <!-- Horizontal line -->
+  <line x1="400" y1="240" x2="400" y2="260" stroke="#888" stroke-width="2"/>
+  <polygon points="395,255 405,255 400,265" fill="#888"/>
+
+  <!-- Three columns -->
+  <!-- Memory System -->
+  <rect x="50" y="260" width="200" height="180" rx="12" fill="#4a3d6f" stroke="#9b59b6" stroke-width="2"/>
+  <text x="150" y="290" fill="#9b59b6" font-size="12" text-anchor="middle" font-weight="bold">MEMORY SYSTEM</text>
+
+  <rect x="65" y="310" width="170" height="35" rx="4" fill="#5d4d85"/>
+  <text x="150" y="333" fill="#fff" font-size="10" text-anchor="middle">Short-term (In-Memory)</text>
+
+  <rect x="65" y="355" width="170" height="35" rx="4" fill="#5d4d85"/>
+  <text x="150" y="378" fill="#fff" font-size="10" text-anchor="middle">Long-term (SQLite+BM25)</text>
+
+  <rect x="65" y="400" width="170" height="35" rx="4" fill="#5d4d85"/>
+  <text x="150" y="423" fill="#fff" font-size="10" text-anchor="middle">Facts (MEMORY.md)</text>
+
+  <!-- Tool Layer -->
+  <rect x="300" y="260" width="200" height="180" rx="12" fill="#6b4a3d" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="290" fill="#e67e22" font-size="12" text-anchor="middle" font-weight="bold">TOOL LAYER</text>
+
+  <rect x="315" y="310" width="170" height="35" rx="4" fill="#8b5d4d"/>
+  <text x="400" y="333" fill="#fff" font-size="10" text-anchor="middle">Tool Registry</text>
+
+  <rect x="315" y="355" width="170" height="35" rx="4" fill="#8b5d4d"/>
+  <text x="400" y="378" fill="#fff" font-size="10" text-anchor="middle">Native Tools (File,Git,Shell)</text>
+
+  <rect x="315" y="400" width="170" height="35" rx="4" fill="#8b5d4d"/>
+  <text x="400" y="423" fill="#fff" font-size="10" text-anchor="middle">Skills (Markdown) + MCP</text>
+
+  <!-- LLM Provider -->
+  <rect x="550" y="260" width="200" height="180" rx="12" fill="#3d4f6f" stroke="#3498db" stroke-width="2"/>
+  <text x="650" y="290" fill="#3498db" font-size="12" text-anchor="middle" font-weight="bold">LLM PROVIDER</text>
+
+  <rect x="565" y="310" width="170" height="35" rx="4" fill="#4d6585"/>
+  <text x="650" y="333" fill="#fff" font-size="10" text-anchor="middle">LiteLLM (Multi-Provider)</text>
+
+  <rect x="565" y="355" width="170" height="35" rx="4" fill="#4d6585"/>
+  <text x="650" y="378" fill="#fff" font-size="10" text-anchor="middle">Models: Fast + Reasoning</text>
+
+  <!-- Connections from Agent Core to columns -->
+  <line x1="270" y1="240" x2="150" y2="260" stroke="#888" stroke-width="1" stroke-dasharray="4"/>
+  <line x1="400" y1="240" x2="400" y2="260" stroke="#888" stroke-width="1" stroke-dasharray="4"/>
+  <line x1="530" y1="240" x2="650" y2="260" stroke="#888" stroke-width="1" stroke-dasharray="4"/>
+
+  <!-- Data Persistence -->
+  <rect x="50" y="460" width="700" height="50" rx="8" fill="#2a2a40" stroke="#555" stroke-width="1"/>
+  <text x="400" y="485" fill="#888" font-size="11" text-anchor="middle">~/.light_agent/sessions/*.jsonl  |  data/memory/long_memory.db  |  workspace/memory/MEMORY.md</text>
+
+  <!-- Legend -->
+  <rect x="50" y="520" width="700" height="60" rx="8" fill="#1f1f35" stroke="#444" stroke-width="1"/>
+  <text x="70" y="545" fill="#88810">Flow" font-size=":</text>
+  <text x="110" y="545" fill="#5cb85c" font-size="10">Agent Loop</text>
+  <text x="180" y="545" fill="#fff" font-size="10">→ Tools/LLM</text>
+  <text x="260" y="545" fill="#fff" font-size="10">→ Memory</text>
+  <text x="330" y="545" fill="#fff" font-size="10">→ Next Iteration</text>
+  <text x="430" y="545" fill="#9b59b6" font-size="10">Subagents:</text>
+  <text x="500" y="545" fill="#fff" font-size="10">Parallel Execution</text>
+
+  <!-- Version -->
+  <text x="750" y="590" fill="#555" font-size="8" text-anchor="end">Light Agent v0.1</text>
+</svg>
