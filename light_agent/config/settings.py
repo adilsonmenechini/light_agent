@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     # Tool Configuration
     ENABLED_TOOLS: str = "shell_command,fetch_content"
     AUTO_APPROVE_SHELL: bool = False
+    ENABLE_SUMMARY: bool = True  # Token optimization: disable to skip summary generation
 
     # MCP Configuration
     # Pattern: MCP_SERVER_<NAME>="command"
