@@ -23,7 +23,21 @@ class LiteLLMProvider(LLMProvider):
         "deepseek": ["deepseek", "api.deepseek.com"],
         "anthropic": ["anthropic", "api.anthropic.com"],
         "azure": ["azure", "openai.azure.com"],
+        "qwen": ["qwen", "api.qwen-tongyi.com", "tongyi"],
     }
+
+    # Model prefixes that are OpenAI-compatible
+    OPENAI_COMPATIBLE_PREFIXES = [
+        "qwen",
+        "moonshot",
+        "yi",
+        "minimax",
+        "zhipu",
+        "openrouter",
+        "cerebras",
+        "groq",
+        "fireworks",
+    ]
 
     def __init__(
         self,
@@ -43,8 +57,14 @@ class LiteLLMProvider(LLMProvider):
         # Check model prefix first
         if "/" in self.model:
             prefix = self.model.split("/")[0]
+
+            # Known providers
             if prefix in ["ollama", "openai", "deepseek", "anthropic", "azure"]:
                 return prefix
+
+            # OpenAI-compatible providers
+            if prefix in self.OPENAI_COMPATIBLE_PREFIXES:
+                return "openai"
 
         # Check base_url patterns
         for provider, patterns in self.PROVIDER_PATTERNS.items():
@@ -52,7 +72,7 @@ class LiteLLMProvider(LLMProvider):
                 if pattern in base:
                     return provider
 
-        # Default to openai-compatible
+        # Default to openai-compatible (most APIs are)
         return "openai"
 
     def _get_model_for_provider(self, provider: str) -> str:
