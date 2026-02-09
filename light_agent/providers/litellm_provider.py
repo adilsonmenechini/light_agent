@@ -162,6 +162,10 @@ class LiteLLMProvider(LLMProvider):
         if base_url:
             params["base_url"] = base_url
 
+        # Force OpenAI-compatible for custom endpoints
+        if self.base_url and "openai" in provider:
+            params["custom_llm_provider"] = "openai"
+
         # Add tools if provided
         if tools:
             params["tools"] = tools
