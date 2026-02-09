@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from light_agent.agent.tools.base import Tool
-from light_agent.agent.tools.registry import ToolRegistry
+from lightagent.agent.tools.base import Tool
+from lightagent.agent.tools.registry import ToolRegistry
 
 
 class SimpleTool(Tool):

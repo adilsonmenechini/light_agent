@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from light_agent.providers.base import LLMProvider, LLMResponse
+from lightagent.providers.base import LLMProvider, LLMResponse
 
 
 class ConcreteProvider(LLMProvider):

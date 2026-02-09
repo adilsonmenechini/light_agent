@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from light_agent.agent.subagent import ExecToolConfig, SubagentManager
-from light_agent.providers.base import LLMResponse
-from light_agent.session.manager import SessionManager
+from lightagent.agent.subagent import ExecToolConfig, SubagentManager
+from lightagent.providers.base import LLMResponse
+from lightagent.session.manager import SessionManager
 
 
 class TestExecToolConfig:

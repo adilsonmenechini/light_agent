@@ -12,22 +12,22 @@ Guide for contributing new features to Light Agent without frameworks.
 
 ```bash
 # Buscar funcionalidade similar
-rg "similar_function_name" light_agent/ --type py
+rg "similar_function_name" lightagent/ --type py
 
 # Verificar se módulo já existe
-rg "from light_agent.agent" light_agent/ --type py | head -20
+rg "from lightagent.agent" lightagent/ --type py | head -20
 
 # Verificar ferramentas similares
-rg "class.*Tool" light_agent/agent/tools/ --type py
+rg "class.*Tool" lightagent/agent/tools/ --type py
 
 # Verificar dataclasses/models similares
-rg "class.*State|class.*Model" light_agent/ --type py
+rg "class.*State|class.*Model" lightagent/ --type py
 
 # Verificar funções utilitárias
-rg "^def " light_agent/utils/ --type py
+rg "^def " lightagent/utils/ --type py
 
 # Verificar arquivos existentes
-fd "my_feature" light_agent/
+fd "my_feature" lightagent/
 ```
 
 ### 1.2 Duplicação de Código
@@ -58,7 +58,7 @@ git checkout -b docs/update-section
 ## 3. Estrutura de Arquivos
 
 ```
-light_agent/agent/
+lightagent/agent/
 ├── my_feature/
 │   ├── __init__.py
 │   ├── models.py          # Pydantic models, dataclasses
@@ -144,7 +144,7 @@ class C(B): ...
 **Use para desacoplar emissores de eventos de consumidores:**
 
 ```python
-from light_agent.agent.observer import AgentObserver, AgentSubject, AgentEvent, AgentEventType
+from lightagent.agent.observer import AgentObserver, AgentSubject, AgentEvent, AgentEventType
 
 # Criar observer
 class MyObserver(AgentObserver):
@@ -197,7 +197,7 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 # Local
-from light_agent.agent.base import Tool
+from lightagent.agent.base import Tool
 ```
 
 ---
@@ -266,7 +266,7 @@ def bad_example():
 ## 7. Criar Nova Ferramenta
 
 ```python
-from light_agent.agent.tools.base import Tool
+from lightagent.agent.tools.base import Tool
 from typing import Any
 
 class MyTool(Tool):
@@ -319,7 +319,7 @@ tests/
     ├── __init__.py
     └── test_skills_loader.py
 ```
-light_agent/tests/
+lightagent/tests/
 ├── __init__.py
 ├── conftest.py              # Fixtures compartilhadas
 ├── agents/
@@ -381,7 +381,7 @@ Use `@pytest.mark.async` ou configure `pytest-asyncio`:
 
 ```python
 import pytest
-from light_agent.agent.loop import AgentLoop
+from lightagent.agent.loop import AgentLoop
 
 class TestAgentLoop:
     @pytest.mark.asyncio
@@ -404,7 +404,7 @@ class TestAgentLoop:
 
 ```python
 from typing import Any
-from light_agent.agent.tools.base import Tool
+from lightagent.agent.tools.base import Tool
 
 class MyTestTool(Tool):
     @property
@@ -433,7 +433,7 @@ from unittest.mock import patch, MagicMock
 class TestMyFeature:
     def test_with_mocked_settings(self) -> None:
         """Mock de configurações."""
-        with patch("light_agent.config.settings") as mock_settings:
+        with patch("lightagent.config.settings") as mock_settings:
             mock_settings.effective_base_dir = Path("/tmp")
             # Test implementation
 ```
@@ -458,9 +458,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock
 
-from light_agent.agent.builder import AgentBuilder
-from light_agent.agent.tools.registry import ToolRegistry
-from light_agent.providers.base import LLMProvider
+from lightagent.agent.builder import AgentBuilder
+from lightagent.agent.tools.registry import ToolRegistry
+from lightagent.providers.base import LLMProvider
 
 
 class TestAgentBuilder:
@@ -499,10 +499,10 @@ class TestAgentBuilder:
 
 ```bash
 # Run linter
-uv run ruff check light_agent/
+uv run ruff check lightagent/
 
 # Run type checker
-uv run pyright light_agent/
+uv run pyright lightagent/
 ```
 
 ### 9.2 Checklist Pré-Commit
@@ -559,7 +559,7 @@ gh pr create --title "feat: Add my feature" --body "Description..."
 
 ```bash
 # 1. Verificar código existente
-rg "similar" light_agent/ --type py
+rg "similar" lightagent/ --type py
 
 # 2. Criar branch
 git checkout -b feature/new-feature
@@ -574,8 +574,8 @@ git checkout -b feature/new-feature
 uv run pytest tests/ -v
 
 # 6. Verificar
-uv run ruff check light_agent/
-uv run pyright light_agent/
+uv run ruff check lightagent/
+uv run pyright lightagent/
 
 # 7. Commitar
 git add .

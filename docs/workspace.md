@@ -6,18 +6,18 @@ Light Agent uses a **dual-directory** approach for organizing behavioral data, a
 
 | Priority | Location | Purpose |
 |----------|----------|---------|
-| **1 (Default)** | `light_agent/base/` | Base configuration, skills, and shared resources |
+| **1 (Default)** | `lightagent/base/` | Base configuration, skills, and shared resources |
 | **2 (Optional)** | `workspace/` | User-specific overrides and daily use examples |
 
-The agent first looks in `light_agent/base/`. If a file/directory doesn't exist there, it falls back to `workspace/`.
+The agent first looks in `lightagent/base/`. If a file/directory doesn't exist there, it falls back to `workspace/`.
 
 ---
 
-## `light_agent/base/` (Base Configuration)
+## `lightagent/base/` (Base Configuration)
 
 Contains the default configuration and skills bundled with the agent.
 
-### `light_agent/base/agents/`
+### `lightagent/base/agents/`
 Agent definitions for Claude Desktop or compatible CLI.
 - `AGENTS.md`: Default agent instructions
 - `HEARTBEAT.md`: Periodic task management
@@ -31,7 +31,7 @@ description: Helps with everyday tasks and questions
 Your goal is to assist users with their daily tasks...
 ```
 
-### `light_agent/base/skills/`
+### `lightagent/base/skills/`
 Knowledge Items (Skills). Each skill is a folder with a `SKILL.md`.
 
 Bundled skills:
@@ -42,10 +42,10 @@ Bundled skills:
 - `tmux/`: TMUX session management
 - `code-search/`: Production code patterns from open source repos
 
-### `light_agent/base/memory/`
+### `lightagent/base/memory/`
 - `MEMORY.md`: **Fixed Facts**. Long-term global context distilled by the agent. Always injected into context.
 
-### `light_agent/base/workflows/`
+### `lightagent/base/workflows/`
 Markdown files describing complex multi-step processes or "Playbooks".
 
 ---
@@ -74,7 +74,7 @@ mkdir -p workspace/workflows
 ```
 workspace/                    # Optional override layer
 ├── agents/
-│   └── custom_agent.md       # Overrides light_agent/base/agents/
+│   └── custom_agent.md       # Overrides lightagent/base/agents/
 ├── skills/
 │   └── my_custom_skill/      # Adds to (not overrides) base skills
 ├── memory/
@@ -96,17 +96,17 @@ workspace/                    # Optional override layer
 
 | Feature | Default Path | Override Path |
 |---------|--------------|---------------|
-| Skills | `light_agent/base/skills/` | `workspace/skills/` |
-| Memory | `light_agent/base/memory/` | `workspace/memory/` |
-| Agents | `light_agent/base/agents/` | `workspace/agents/` |
-| Workflows | `light_agent/base/workflows/` | `workspace/workflows/` |
-| MCP Config | `light_agent/base/servers_config.json` | `workspace/servers_config.json` |
+| Skills | `lightagent/base/skills/` | `workspace/skills/` |
+| Memory | `lightagent/base/memory/` | `workspace/memory/` |
+| Agents | `lightagent/base/agents/` | `workspace/agents/` |
+| Workflows | `lightagent/base/workflows/` | `workspace/workflows/` |
+| MCP Config | `lightagent/base/servers_config.json` | `workspace/servers_config.json` |
 
 ---
 
 ## Best Practices
 
-1. **Keep base clean**: Modify `light_agent/base/` for permanent changes
+1. **Keep base clean**: Modify `lightagent/base/` for permanent changes
 2. **Use workspace for testing**: Experiment in `workspace/` first
 3. **Document your skills**: Every skill should have a `SKILL.md` with metadata
-4. **Back up base**: Before modifying `light_agent/base/`, ensure you have backups
+4. **Back up base**: Before modifying `lightagent/base/`, ensure you have backups
