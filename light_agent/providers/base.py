@@ -34,15 +34,20 @@ class LLMProvider(ABC):
         """Generate response with optional tool calls."""
         pass
 
-    @abstractmethod
     async def generate_stream(
         self,
         messages: List[Dict[str, str]],
         tools: Optional[List[Dict[str, Any]]] = None,
         model: Optional[str] = None,
-    ) -> "LiteLLMProvider.generate_stream()":  # type: ignore
-        """Generate streaming response for lower perceived latency."""
-        pass
+    ) -> AsyncGenerator[str, None]:
+        """Generate streaming response for lower perceived latency.
+
+        Override this method in providers that support streaming.
+        Default implementation falls back to non-streaming.
+        """
+        response = await self.generate(messages, tools, model)
+        if response.content:
+            yield response.content
 
     @abstractmethod
     def get_default_model(self) -> str:
