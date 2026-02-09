@@ -29,6 +29,7 @@ from .context import (
     detect_causal_relation,
     are_related,
 )
+from . import summarizer
 
 __all__ = [
     "ObservationCategory",
@@ -52,4 +53,5 @@ __all__ = [
     "detect_temporal_relation",
     "detect_causal_relation",
     "are_related",
+    "summarizer",  # Export the module for access to SummarizationConfig, etc.
 ]
