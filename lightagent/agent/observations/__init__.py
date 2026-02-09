@@ -13,6 +13,13 @@ from .scorer import (
     get_importance_level,
     should_promote_to_memory,
 )
+from .deduplication import (
+    ObservationDeduplicator,
+    calculate_similarity,
+    calculate_levenshtein_similarity,
+    find_duplicates_in_list,
+    normalize_text,
+)
 
 __all__ = [
     "ObservationCategory",
@@ -24,4 +31,9 @@ __all__ = [
     "calculate_importance_score",
     "get_importance_level",
     "should_promote_to_memory",
+    "ObservationDeduplicator",
+    "calculate_similarity",
+    "calculate_levenshtein_similarity",
+    "find_duplicates_in_list",
+    "normalize_text",
 ]
