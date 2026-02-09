@@ -20,6 +20,15 @@ from .deduplication import (
     find_duplicates_in_list,
     normalize_text,
 )
+from .context import (
+    Observation,
+    ContextMatch,
+    ContextAwareObservationStore,
+    extract_context_tags,
+    detect_temporal_relation,
+    detect_causal_relation,
+    are_related,
+)
 
 __all__ = [
     "ObservationCategory",
@@ -36,4 +45,11 @@ __all__ = [
     "calculate_levenshtein_similarity",
     "find_duplicates_in_list",
     "normalize_text",
+    "Observation",
+    "ContextMatch",
+    "ContextAwareObservationStore",
+    "extract_context_tags",
+    "detect_temporal_relation",
+    "detect_causal_relation",
+    "are_related",
 ]
