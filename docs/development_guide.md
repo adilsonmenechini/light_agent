@@ -299,17 +299,196 @@ class MyTool(Tool):
 
 ## 8. Testes
 
+### 8.1 Estrutura de Testes
+
+```
+tests/
+├── __init__.py              # Fixture globais
+├── conftest.py              # Fixtures compartilhadas
+├── agents/
+│   ├── __init__.py
+│   ├── test_agent_builder.py
+│   ├── test_agent_loop.py
+│   ├── test_subagent.py
+│   ├── test_tool.py
+│   └── test_tool_registry.py
+├── providers/
+│   ├── __init__.py
+│   └── test_litellm_provider.py
+└── skills/
+    ├── __init__.py
+    └── test_skills_loader.py
+```
+light_agent/tests/
+├── __init__.py
+├── conftest.py              # Fixtures compartilhadas
+├── agents/
+│   ├── __init__.py
+│   ├── test_agent_builder.py
+│   ├── test_agent_loop.py
+│   ├── test_subagent.py
+│   ├── test_tool.py
+│   └── test_tool_registry.py
+├── providers/
+│   ├── __init__.py
+│   └── test_litellm_provider.py
+└── skills/
+    ├── __init__.py
+    └── test_skills_loader.py
+```
+
+### 8.2 pytest Configuration
+
+O projeto usa `pytest` com `pytest-asyncio` para testes async:
+
+```bash
+# Executar todos os testes
+uv run pytest tests/
+
+# Executar com verbose
+uv run pytest tests/ -v
+
+# Executar teste específico
+uv run pytest tests/agents/test_agent_builder.py::TestAgentBuilder::test_init -v
+```
+
+### 8.3 Fixtures Compartilhadas (conftest.py)
+
 ```python
 import pytest
+from unittest.mock import AsyncMock, MagicMock
+
+@pytest.fixture
+def temp_workspace() -> Generator[str, Any, Any]:
+    """Diretório temporário para testes."""
+    with TemporaryDirectory() as tmp:
+        yield tmp
+
+@pytest.fixture
+def mock_provider() -> MagicMock:
+    """Provider LLM mockado."""
+    provider = MagicMock(spec=LLMProvider)
+    provider.generate = AsyncMock(
+        return_value=LLMResponse(content="Mock response")
+    )
+    provider.get_default_model = MagicMock(return_value="test/model")
+    return provider
+```
+
+### 8.4 Testes Async
+
+Use `@pytest.mark.async` ou configure `pytest-asyncio`:
+
+```python
+import pytest
+from light_agent.agent.loop import AgentLoop
+
+class TestAgentLoop:
+    @pytest.mark.asyncio
+    async def test_run_simple_response(
+        self,
+        mock_provider: MagicMock,
+        temp_workspace: str
+    ) -> None:
+        """Teste de execução simples."""
+        loop = AgentLoop(
+            provider=mock_provider,
+            memory=MemoryStore(temp_workspace),
+            tools=ToolRegistry(),
+        )
+        result = await loop.run("Hello")
+        assert result == "Mock response"
+```
+
+### 8.5 Testes de Ferramentas (Tools)
+
+```python
+from typing import Any
+from light_agent.agent.tools.base import Tool
+
+class MyTestTool(Tool):
+    @property
+    def name(self) -> str:
+        return "my_test_tool"
+
+    @property
+    def parameters(self) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "input": {"type": "string", "description": "Input"}
+            },
+            "required": ["input"]
+        }
+
+    async def execute(self, **kwargs: Any) -> str:
+        return f"processed: {kwargs.get('input')}"
+```
+
+### 8.6 Mocking de Dependências
+
+```python
+from unittest.mock import patch, MagicMock
 
 class TestMyFeature:
-    def test_basic_functionality(self):
-        result = my_function("input")
-        assert result == "expected"
+    def test_with_mocked_settings(self) -> None:
+        """Mock de configurações."""
+        with patch("light_agent.config.settings") as mock_settings:
+            mock_settings.effective_base_dir = Path("/tmp")
+            # Test implementation
+```
 
-    async def test_async_functionality(self):
-        result = await async_function()
-        assert result is not None
+### 8.7 Convenções de Testes
+
+| Tipo | Padrão |
+|------|---------|
+| Arquivos | `test_*.py` |
+| Classes | `Test*` |
+| Funções | `test_*` |
+| Fixtures | `conftest.py` |
+| Async | `@pytest.mark.asyncio` |
+
+### 8.8 Exemplo Completo
+
+```python
+"""Tests for AgentBuilder."""
+
+import pytest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock
+
+from light_agent.agent.builder import AgentBuilder
+from light_agent.agent.tools.registry import ToolRegistry
+from light_agent.providers.base import LLMProvider
+
+
+class TestAgentBuilder:
+    """Tests for AgentBuilder class."""
+
+    def test_init(self) -> None:
+        """Test initialization with defaults."""
+        builder = AgentBuilder()
+        assert builder._provider is None
+        assert isinstance(builder._tools, ToolRegistry)
+
+    def test_with_provider(self) -> None:
+        """Test setting provider."""
+        builder = AgentBuilder()
+        result = builder.with_provider(model="ollama/llama3")
+        assert result is builder
+        assert builder._provider is not None
+
+    def test_build_chain(self) -> None:
+        """Test fluent builder pattern."""
+        with TemporaryDirectory() as tmp:
+            agent = (
+                AgentBuilder()
+                .with_workspace(Path(tmp))
+                .with_provider(model="test/model")
+                .build()
+            )
+            assert agent is not None
 ```
 
 ---
@@ -330,7 +509,9 @@ uv run pyright light_agent/
 
 - [ ] Code passa `ruff check`
 - [ ] Code passa `pyright`
-- [ ] Tests passam (`pytest`)
+- [ ] Tests passam (`uv run pytest tests/`)
+- [ ] Novas features têm testes unitários
+- [ ] Bugs corrigidos têm testes de regressão
 - [ ] Sem `as any`, `@ts-ignore`, ou supressão de tipos
 - [ ] Docstrings em APIs públicas
 - [ ] Imports organizados
@@ -383,16 +564,20 @@ rg "similar" light_agent/ --type py
 # 2. Criar branch
 git checkout -b feature/new-feature
 
-# 3. Desenvolver (seguir convenções OO)
+# 3. Criar testes para a nova feature
+#    - Adicionar em tests/<module>/
+#    - Seguir padrão: test_*.py
 
-# 4. Testar
-pytest light_agent/
+# 4. Desenvolver (seguir convenções OO)
 
-# 5. Verificar
+# 5. Testar
+uv run pytest tests/ -v
+
+# 6. Verificar
 uv run ruff check light_agent/
 uv run pyright light_agent/
 
-# 6. Commitar
+# 7. Commitar
 git add .
 git commit -m "feat(scope): description"
 ```
