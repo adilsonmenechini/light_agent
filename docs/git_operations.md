@@ -378,4 +378,4 @@ The Light Agent restricts Git operations to safe commands for everyday use.
 - Dangerous flags (e.g., `--force` without approval)
 - Shell metacharacters in commands
 
-See `light_agent/agent/tools/shell.py` for security configuration.
+See `lightagent/agent/tools/shell.py` for security configuration.

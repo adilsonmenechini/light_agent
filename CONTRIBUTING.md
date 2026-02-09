@@ -36,7 +36,7 @@ git checkout -b feature/your-feature
 # Follow the Development Guide: docs/development_guide.md
 
 # 4. Test your changes
-pytest light_agent/
+pytest lightagent/
 
 # 5. Push and create PR
 git push -u origin feature/your-feature

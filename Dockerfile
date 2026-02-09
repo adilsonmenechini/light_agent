@@ -13,7 +13,7 @@ COPY pyproject.toml requirements.txt* ./
 RUN uv pip install --system -r requirements.txt
 
 # Copy application code
-COPY light_agent/ ./light_agent/
+COPY lightagent/ ./lightagent/
 COPY workspace/ ./workspace/
 COPY README.md ./
 
@@ -35,4 +35,4 @@ COPY --from=builder /app /app
 ENV PYTHONUNBUFFERED=1
 ENV RESTRICT_TO_WORKSPACE=true
 
-ENTRYPOINT ["python", "-m", "light_agent.cli.application", "chat"]
+ENTRYPOINT ["python", "-m", "lightagent.cli.application", "chat"]

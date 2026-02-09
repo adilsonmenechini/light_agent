@@ -6,12 +6,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from light_agent.agent.builder import AgentBuilder
-from light_agent.agent.memory import MemoryStore
-from light_agent.agent.skills import SkillsLoader
-from light_agent.agent.tools.filesystem import ReadFileTool, WriteFileTool
-from light_agent.agent.tools.registry import ToolRegistry
-from light_agent.providers.base import LLMProvider
+from lightagent.agent.builder import AgentBuilder
+from lightagent.agent.memory import MemoryStore
+from lightagent.agent.skills import SkillsLoader
+from lightagent.agent.tools.filesystem import ReadFileTool, WriteFileTool
+from lightagent.agent.tools.registry import ToolRegistry
+from lightagent.providers.base import LLMProvider
 
 
 class TestAgentBuilder:

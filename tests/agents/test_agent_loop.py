@@ -5,11 +5,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from light_agent.agent.loop import AgentLoop, InsightExtractor
-from light_agent.agent.memory import MemoryStore
-from light_agent.agent.short_memory import ShortTermMemory
-from light_agent.agent.tools.registry import ToolRegistry
-from light_agent.providers.base import LLMResponse
+from lightagent.agent.loop import AgentLoop, InsightExtractor
+from lightagent.agent.memory import MemoryStore
+from lightagent.agent.short_memory import ShortTermMemory
+from lightagent.agent.tools.registry import ToolRegistry
+from lightagent.providers.base import LLMResponse
 
 
 class TestInsightExtractor:

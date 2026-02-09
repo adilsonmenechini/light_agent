@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from light_agent.agent.tools.base import Tool
-from light_agent.providers.base import LLMProvider, LLMResponse
+from lightagent.agent.tools.base import Tool
+from lightagent.providers.base import LLMProvider, LLMResponse
 
 
 @pytest.fixture(scope="session")

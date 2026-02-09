@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 import pytest
 import yaml
 
-from light_agent.agent.skills import SkillsLoader
+from lightagent.agent.skills import SkillsLoader
 
 
 class TestSkillsLoader:

@@ -43,20 +43,20 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-lightagent = "light_agent.cli.application:app"
+lightagent = "lightagent.cli.application:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["light_agent"]
+packages = ["lightagent"]
 
 [tool.hatch.build]
 include = [
-    "light_agent/**/*.py",
+    "lightagent/**/*.py",
     "workspace/skills/**/*.md",
     "workspace/skills/**/*.sh",
 ]
 
 [tool.hatch.build.targets.wheel.sources]
-"light_agent" = "light_agent"
+"lightagent" = "lightagent"
 
 [tool.ruff]
 line-length = 100

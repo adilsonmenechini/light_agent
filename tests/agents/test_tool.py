@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from light_agent.agent.tools.base import Tool
+from lightagent.agent.tools.base import Tool
 
 
 class MockTool(Tool):

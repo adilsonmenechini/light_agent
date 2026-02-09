@@ -10,7 +10,7 @@ This document provides detailed implementation tasks for achieving 12-Factor Age
 **Estimated Effort:** 3-4 days
 
 #### Task 1.1: Define Thread State Schema
-Create `light_agent/agent/thread.py`:
+Create `lightagent/agent/thread.py`:
 
 ```python
 from pydantic import BaseModel
@@ -37,11 +37,11 @@ class ThreadState(BaseModel):
 ```
 
 #### Task 1.2: Create Thread Store
-Create `light_agent/agent/thread_store.py`:
+Create `lightagent/agent/thread_store.py`:
 
 ```python
 from pathlib import Path
-from light_agent.agent.thread import ThreadState, ThreadStatus
+from lightagent.agent.thread import ThreadState, ThreadStatus
 
 class ThreadStore:
     """Persist and retrieve agent thread states."""
@@ -83,7 +83,7 @@ class ThreadStore:
 **Estimated Effort:** 4-5 days
 
 #### Task 2.1: FastAPI Server Setup
-Create `light_agent/server/main.py`:
+Create `lightagent/server/main.py`:
 
 ```python
 from fastapi import FastAPI, HTTPException
@@ -132,7 +132,7 @@ async def webhook_handler(thread_id: str, payload: dict):
 ```
 
 #### Task 2.2: CLI Integration
-Add to `light_agent/cli/commands.py`:
+Add to `lightagent/cli/commands.py`:
 
 ```python
 @app.command()
@@ -158,7 +158,7 @@ def serve(host: str = "0.0.0.0", port: int = 8000):
 **Estimated Effort:** 2-3 days
 
 #### Task 3.1: Define Approval Tool Schema
-Create `light_agent/agent/tools/approval.py`:
+Create `lightagent/agent/tools/approval.py`:
 
 ```python
 from pydantic import BaseModel
@@ -228,7 +228,7 @@ class HumanApprovalTool:
 ```
 
 #### Task 3.2: Approval Store
-Create `light_agent/agent/approval_store.py`:
+Create `lightagent/agent/approval_store.py`:
 
 ```python
 from pathlib import Path
@@ -283,7 +283,7 @@ async def respond_approval(request_id: str, body: dict):
 **Estimated Effort:** 2-3 days
 
 #### Task 4.1: Hook System Design
-Create `light_agent/agent/hooks.py`:
+Create `lightagent/agent/hooks.py`:
 
 ```python
 from abc import ABC, abstractmethod
@@ -359,7 +359,7 @@ Add hook execution at strategic points in the agent loop:
 **Estimated Effort:** 2 days
 
 #### Task 5.1: Error Handler
-Create `light_agent/agent/error_handler.py`:
+Create `lightagent/agent/error_handler.py`:
 
 ```python
 from typing import Any, Dict, Optional
@@ -411,11 +411,11 @@ class ErrorCompactor:
 **Estimated Effort:** 3-4 days
 
 #### Task 6.1: Reducer Function
-Create `light_agent/agent/reducer.py`:
+Create `lightagent/agent/reducer.py`:
 
 ```python
 from typing import Any, Dict, List, Tuple
-from light_agent.agent.thread import ThreadState
+from lightagent.agent.thread import ThreadState
 
 class AgentReducer:
     """Stateless reducer for agent state transitions."""
@@ -472,7 +472,7 @@ uvicorn = {extras = ["standard"], version = ">=0.23.0"}
 ## File Structure
 
 ```
-light_agent/
+lightagent/
   agent/
     thread.py           # Task 1.1
     thread_store.py     # Task 1.2
