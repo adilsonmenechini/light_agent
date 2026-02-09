@@ -72,6 +72,10 @@ class LiteLLMProvider(LLMProvider):
                 if pattern in base:
                     return provider
 
+        # For localhost or unknown URLs, still use openai-compatible
+        if "localhost" in base or "127.0.0.1" in base:
+            return "openai"
+
         # Default to openai-compatible (most APIs are)
         return "openai"
 
