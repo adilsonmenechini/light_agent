@@ -35,10 +35,11 @@ class Settings(BaseSettings):
     ENABLE_SUMMARY: bool = True  # Token optimization: disable to skip summary generation
 
     # Performance Configuration
-    ENABLE_STREAMING: bool = True  # Enable streaming for lower perceived latency
+    ENABLE_STREAMING: bool = False  # Enable streaming for lower perceived latency
     SCHEMAS_CACHE_TTL: float = 60.0  # Cache tool schemas for 60 seconds
     MEMORY_CACHE_TTL: float = 30.0  # Cache memory files for 30 seconds
     MAX_OUTPUT_TOKENS: int = 512  # Limit output tokens for faster responses
+    REQUEST_TIMEOUT: int = 120  # Timeout for LLM requests in seconds
 
     # MCP Configuration
     # Pattern: MCP_SERVER_<NAME>="command"

@@ -40,7 +40,7 @@ class LLMProvider(ABC):
         messages: List[Dict[str, str]],
         tools: Optional[List[Dict[str, Any]]] = None,
         model: Optional[str] = None,
-    ) -> AsyncGenerator[str, None]:
+    ) -> "LiteLLMProvider.generate_stream()":  # type: ignore
         """Generate streaming response for lower perceived latency."""
         pass
 

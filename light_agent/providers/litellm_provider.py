@@ -116,6 +116,8 @@ class LiteLLMProvider(LLMProvider):
         model: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Build completion parameters with optimizations for different model types."""
+        from light_agent.config.settings import settings
+
         model_to_use = model or self.model
         is_reasoning = self.is_reasoning_model(model_to_use)
         provider = self._detect_provider()
@@ -129,6 +131,7 @@ class LiteLLMProvider(LLMProvider):
             "model": clean_model,
             "messages": messages,
             "api_key": api_key,
+            "timeout": getattr(settings, "REQUEST_TIMEOUT", 120),
         }
 
         # Add base_url if available
