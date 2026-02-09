@@ -59,5 +59,8 @@ docker run -it --rm -v $(pwd)/.env:/app/.env light-agent
 - [Providers](docs/providers.md) - LLM setup
 - [Tools & MCP](docs/tools_mcp.md) - Available tools
 - [Librarian](docs/librarian_tools.md) - Web research tools
+- [Observations](docs/observations.md) - Tool Observations 2.0 guide
+- [12-Factor Implementation](docs/12factor_implementation.md) - 12-factor agent patterns
+- [Git Operations](docs/git_operations.md) - Git workflow documentation
 - [Development](docs/development_guide.md) - Contributing code
 - [Contributing](CONTRIBUTING.md) - How to help
