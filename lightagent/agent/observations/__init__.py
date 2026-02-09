@@ -29,6 +29,13 @@ from .context import (
     detect_causal_relation,
     are_related,
 )
+from . import summarizer
+from .consolidation import (
+    MemoryEntry,
+    ConsolidationConfig,
+    MemoryConsolidator,
+    create_memory_entry,
+)
 
 __all__ = [
     "ObservationCategory",
@@ -52,4 +59,9 @@ __all__ = [
     "detect_temporal_relation",
     "detect_causal_relation",
     "are_related",
+    "summarizer",
+    "MemoryEntry",
+    "ConsolidationConfig",
+    "MemoryConsolidator",
+    "create_memory_entry",
 ]
